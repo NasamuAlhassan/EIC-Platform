@@ -17,8 +17,38 @@ export type MemberState = {
   message?: string;
   /** Shown once, so an admin can pass it on. Never stored in plain text. */
   tempPassword?: string;
+  /**
+   * Whether the password actually reached them.
+   *
+   * Reported rather than assumed: a provider will refuse to send from an
+   * unverified domain, and an administrator who believes the email went out
+   * leaves a new member with no way in and no idea why.
+   */
+  emailed?: boolean;
+  emailNote?: string;
   errors?: Record<string, string>;
 };
+
+/** Turns a send result into something an administrator can act on. */
+function describeDelivery(
+  result: { ok: boolean; simulated: boolean; error?: string },
+  address: string,
+): { emailed: boolean; emailNote: string } {
+  if (result.simulated) {
+    return {
+      emailed: false,
+      emailNote:
+        "Email isn't set up yet, so nothing was sent — pass the password on yourself.",
+    };
+  }
+  if (!result.ok) {
+    return {
+      emailed: false,
+      emailNote: `The email couldn't be sent (${result.error ?? "unknown error"}) — pass the password on yourself.`,
+    };
+  }
+  return { emailed: true, emailNote: `Sent to ${address}.` };
+}
 
 const ROLES = ["MEMBER", "EDITOR", "EXECUTIVE", "ADMIN"] as const;
 
@@ -97,8 +127,9 @@ export async function createMember(
     summary: `Created ${created.name} (${created.email}) as ${ROLE_LABEL[created.role]}`,
   });
 
-  await sendEmail({
-    to: created.email,
+  const delivery = describeDelivery(
+    await sendEmail({
+      to: created.email,
     subject: `Your ${site.boardName} account`,
     body: [
       `Hello ${created.name},`,
@@ -106,8 +137,10 @@ export async function createMember(
       `Email: ${created.email}\nTemporary password: ${tempPassword}`,
       "You'll be asked to choose your own password after signing in for the first time.",
     ].join("\n\n"),
-    action: { label: "Sign in", url: `${site.url}/login` },
-  });
+      action: { label: "Sign in", url: `${site.url}/login` },
+    }),
+    created.email,
+  );
 
   revalidatePath("/admin/members");
   revalidatePath("/portal/directory");
@@ -117,6 +150,7 @@ export async function createMember(
     ok: true,
     message: `${created.name} has been added.`,
     tempPassword,
+    ...delivery,
   };
 }
 
@@ -243,8 +277,9 @@ export async function resetMemberPassword(
     summary: `Reset the password for ${target.name}`,
   });
 
-  await sendEmail({
-    to: target.email,
+  const resetDelivery = describeDelivery(
+    await sendEmail({
+      to: target.email,
     subject: `Your ${site.boardName} password was reset`,
     body: [
       `Hello ${target.name},`,
@@ -252,8 +287,10 @@ export async function resetMemberPassword(
       `Temporary password: ${tempPassword}`,
       "Please sign in and choose a new one.",
     ].join("\n\n"),
-    action: { label: "Sign in", url: `${site.url}/login` },
-  });
+      action: { label: "Sign in", url: `${site.url}/login` },
+    }),
+    target.email,
+  );
 
   revalidatePath("/admin/members");
 
@@ -261,5 +298,6 @@ export async function resetMemberPassword(
     ok: true,
     message: `A new password has been set for ${target.name}.`,
     tempPassword,
+    ...resetDelivery,
   };
 }

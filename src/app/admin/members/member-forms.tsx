@@ -71,15 +71,17 @@ export function CreateMemberForm() {
   return (
     <form action={action} className="space-y-4">
       {state.ok && state.message ? (
-        <Alert tone="ok" title={state.message}>
+        <Alert tone={state.emailed ? "ok" : "warn"} title={state.message}>
           {state.tempPassword ? (
             <>
               <p>
                 Temporary password — copy it now, it won&apos;t be shown again.
-                They&apos;ll be asked to change it on first sign-in. It has also
-                been emailed to them.
+                They&apos;ll be asked to change it on first sign-in.
               </p>
               <TempPassword value={state.tempPassword} />
+              {state.emailNote ? (
+                <p className="mt-2 text-[12.5px]">{state.emailNote}</p>
+              ) : null}
             </>
           ) : null}
         </Alert>
@@ -257,9 +259,15 @@ export function MemberRow({
         </div>
 
         {resetState.ok && resetState.tempPassword ? (
-          <Alert tone="ok" className="mt-3">
+          <Alert
+            tone={resetState.emailed ? "ok" : "warn"}
+            className="mt-3"
+          >
             <p>{resetState.message} New temporary password:</p>
             <TempPassword value={resetState.tempPassword} />
+            {resetState.emailNote ? (
+              <p className="mt-2 text-[12.5px]">{resetState.emailNote}</p>
+            ) : null}
           </Alert>
         ) : null}
         {resetState.errors?.form ? (
