@@ -16,13 +16,17 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 
-  // Migrations need a direct connection. Neon's pooled endpoint runs PgBouncer,
-  // which doesn't hold the session-level advisory lock Prisma takes while
-  // applying a migration — run one through the pooler and it can hang or fail
-  // partway. The app itself still uses the pooled `url` above.
+  // There is deliberately no `directUrl` here.
   //
-  // Locally there is no pooler, so both point at the same database.
-  directUrl = env("DIRECT_URL")
+  // Migrations do need a direct connection — a pooled endpoint runs PgBouncer,
+  // which can't hold the session-level advisory lock Prisma takes while
+  // applying one. But `env()` has no fallback, so naming a second variable here
+  // makes *every* Prisma command fail when it isn't set, including the
+  // `prisma generate` that runs on install. That failed two deploys.
+  //
+  // Instead, scripts/build.mjs finds the unpooled connection string under
+  // whichever name the host provides it, and passes it as DATABASE_URL for the
+  // migration step alone. The running app always gets the pooled one.
 }
 
 // ---------------------------------------------------------------------------

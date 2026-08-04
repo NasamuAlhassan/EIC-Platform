@@ -94,8 +94,12 @@ if (resolved.source === "DATABASE_URL") {
   console.log(`Using ${resolved.source} for migrations.`);
 }
 
-const env = { ...process.env, DIRECT_URL: resolved.value };
-
-run("npx", ["prisma", "generate"], env);
-run("npx", ["prisma", "migrate", "deploy"], env);
-run("npx", ["next", "build"], env);
+// Only the migration step gets the direct connection. `generate` doesn't touch
+// the database, and the built app must use the pooled URL — serverless opens a
+// lot of short-lived connections, which is what the pooler is for.
+run("npx", ["prisma", "generate"], process.env);
+run("npx", ["prisma", "migrate", "deploy"], {
+  ...process.env,
+  DATABASE_URL: resolved.value,
+});
+run("npx", ["next", "build"], process.env);
