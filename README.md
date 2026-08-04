@@ -314,15 +314,21 @@ Editorial Board.
 ### 1. Database — Neon
 
 1. Sign up at [neon.tech](https://neon.tech) and create a project.
-2. Copy the **pooled** connection string (it has `-pooler` in the host).
-3. Keep `?sslmode=require` on the end.
+2. From the connection details, copy **both** strings:
+   - the **pooled** one (host contains `-pooler`) → `DATABASE_URL`
+   - the **direct** one (no `-pooler`) → `DIRECT_URL`
+3. Keep `?sslmode=require` on the end of both.
+
+Two URLs because migrations need a direct connection: the pooled endpoint runs
+PgBouncer, which doesn't hold the session-level lock Prisma takes while applying
+a migration. The app itself uses the pooled one.
 
 ### 2. Put the code on GitHub
 
+The repository is already initialised and committed. Create an empty repo on
+GitHub, then:
+
 ```bash
-git init
-git add .
-git commit -m "Editorial Board Hub"
 git remote add origin git@github.com:YOUR-ORG/editorial-board.git
 git push -u origin main
 ```
@@ -334,26 +340,33 @@ git push -u origin main
 
    | Name | Value |
    | --- | --- |
-   | `DATABASE_URL` | your Neon pooled connection string |
+   | `DATABASE_URL` | Neon **pooled** string |
+   | `DIRECT_URL` | Neon **direct** string |
    | `AUTH_SECRET` | `openssl rand -base64 32` |
-   | `NEXT_PUBLIC_SITE_URL` | your final URL, e.g. `https://board.school.edu` |
    | `CRON_SECRET` | `openssl rand -hex 32` — authorises the daily reminder job |
+   | `NEXT_PUBLIC_SITE_URL` | your URL, e.g. `https://eic-board.vercel.app` |
 
-3. Deploy. The build runs `prisma generate` automatically, and `vercel.json`
-   registers the daily reminder cron.
+3. Deploy.
 
-### 4. Create the schema in production
+The build applies pending migrations before it builds, so a brand-new Neon
+database provisions itself on the first deploy — and every later deploy applies
+whatever migrations are new. You do not run anything by hand.
+
+(That ordering matters: the public pages are prerendered at build time, so
+without it the very first build fails against a database with no tables.)
+
+### 4. Create your first administrator
 
 ```bash
-DATABASE_URL="your-neon-url" npx prisma migrate deploy
+DATABASE_URL="your-neon-direct-url" npm run create:admin -- \
+  --email you@yourschool.edu.gh --name "Your Name" --position "Editor-in-Chief"
 ```
 
-Then create your first administrator. The simplest way is to seed with a
-password you choose and immediately delete the accounts you don't want:
+It prints a generated password once and requires a change on first sign-in.
 
-```bash
-DATABASE_URL="your-neon-url" SEED_PASSWORD="a-strong-password" npm run db:seed
-```
+**Do not run `db:seed` against production.** That creates eight demo accounts
+sharing one password published in this README — fine locally, a hole on a live
+school site.
 
 ### 5. File uploads — required before real use
 
