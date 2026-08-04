@@ -21,6 +21,37 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { readFileSync, existsSync } from "node:fs";
+
+/**
+ * Load `.env` the way Next and Prisma do.
+ *
+ * This script is plain Node, which reads no dotenv file of its own — so
+ * locally, where the connection string lives in `.env` rather than the real
+ * environment, it would otherwise decide no database was configured and refuse
+ * to build. A host like Vercel sets real environment variables, which is why
+ * this only matters on a developer's machine.
+ *
+ * Anything already in the environment wins; this only fills the gaps.
+ */
+function loadDotEnv(file = ".env") {
+  if (!existsSync(file)) return;
+
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+    if (!match) continue;
+
+    const [, key, rawValue = ""] = match;
+    if (process.env[key] !== undefined) continue;
+
+    // Strip one layer of matching quotes, as dotenv does.
+    process.env[key] = rawValue
+      .trim()
+      .replace(/^(['"])([\s\S]*)\1$/, "$2");
+  }
+}
+
+loadDotEnv();
 
 const CANDIDATES = [
   // Set explicitly — always wins.
