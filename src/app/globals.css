@@ -1,0 +1,285 @@
+@import "tailwindcss";
+
+/*
+ * ---------------------------------------------------------------------------
+ * Design tokens
+ * ---------------------------------------------------------------------------
+ * An editorial palette: warm paper, ink text, a navy masthead colour, and a
+ * single muted crimson accent used sparingly for emphasis.
+ *
+ * Semantic names only — components never reference a raw hex. Dark mode swaps
+ * the variables underneath, so nothing downstream has to know about it.
+ *
+ * Fonts are deliberately system stacks. No webfont download means the site
+ * renders instantly on a slow school connection, which matters more here than
+ * a bespoke typeface.
+ */
+
+:root {
+  --paper: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f4f3ef;
+  --surface-3: #eceae4;
+
+  --ink: #17181c;
+  --ink-2: #4a4c55;
+  --ink-3: #767884;
+
+  --line: #e3e1da;
+  --line-2: #d2cfc6;
+
+  --brand: #1f3a5f;
+  --brand-hover: #2b4d7a;
+  --brand-soft: #e8edf4;
+  --brand-ink: #ffffff;
+
+  --accent: #9b2c2c;
+  --accent-soft: #f7e9e9;
+
+  --ok: #1f6f43;
+  --ok-soft: #e6f2ec;
+  --warn: #8a5a12;
+  --warn-soft: #fcf1de;
+  --danger: #a12626;
+  --danger-soft: #fbe9e9;
+
+  --ring: #1f3a5f;
+
+  --radius: 0.625rem;
+
+  --shadow-sm: 0 1px 2px rgb(23 24 28 / 0.05);
+  --shadow: 0 1px 3px rgb(23 24 28 / 0.07), 0 4px 12px -4px rgb(23 24 28 / 0.06);
+  --shadow-lg: 0 8px 32px -8px rgb(23 24 28 / 0.16);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    monospace;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #131418;
+    --surface: #191a1f;
+    --surface-2: #212228;
+    --surface-3: #2a2b33;
+
+    --ink: #f0efec;
+    --ink-2: #b6b5b0;
+    --ink-3: #86858a;
+
+    --line: #2e2f37;
+    --line-2: #3d3e48;
+
+    --brand: #7ea6d8;
+    --brand-hover: #98b9e3;
+    --brand-soft: #1c2836;
+    --brand-ink: #10161e;
+
+    --accent: #e08585;
+    --accent-soft: #2e1e1e;
+
+    --ok: #6fc494;
+    --ok-soft: #16261e;
+    --warn: #dbab5f;
+    --warn-soft: #2a2214;
+    --danger: #e88b8b;
+    --danger-soft: #2e1b1b;
+
+    --ring: #7ea6d8;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow: 0 1px 3px rgb(0 0 0 / 0.45), 0 4px 12px -4px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 8px 32px -8px rgb(0 0 0 / 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+
+  --radius-DEFAULT: var(--radius);
+
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect users who've asked the OS to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Utilities
+   -------------------------------------------------------------------------- */
+
+/* The masthead rule that runs under section headings on the public site. */
+.rule-accent::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-top: 0.75rem;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* Long-form body copy (news posts, event agendas, announcements). */
+.prose-editorial {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+.prose-editorial > * + * {
+  margin-top: 1.15em;
+}
+.prose-editorial h2 {
+  font-size: 1.45rem;
+  margin-top: 1.9em;
+  color: var(--ink);
+}
+.prose-editorial h3 {
+  font-size: 1.18rem;
+  margin-top: 1.6em;
+  color: var(--ink);
+}
+.prose-editorial ul,
+.prose-editorial ol {
+  padding-left: 1.35em;
+}
+.prose-editorial ul {
+  list-style: disc;
+}
+.prose-editorial ol {
+  list-style: decimal;
+}
+.prose-editorial li + li {
+  margin-top: 0.4em;
+}
+.prose-editorial strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+.prose-editorial a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-editorial blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+/* Subtle paper texture behind the public hero. */
+.hero-tint {
+  background-image:
+    radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      var(--brand-soft) 0%,
+      transparent 70%
+    );
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

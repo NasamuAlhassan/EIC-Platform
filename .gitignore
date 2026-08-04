@@ -1,0 +1,26 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+
+# env
+.env
+.env*.local
+
+# local uploads (dev storage adapter) — deliberately outside public/
+/.uploads
+
+# local postgres data dir
+/.pgdata
+
+# backups
+/backups
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel
+.vercel

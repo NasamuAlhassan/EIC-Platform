@@ -1,0 +1,609 @@
+// Editorial Board Hub — data model
+//
+// Design notes:
+//  * Access control uses a *ranked* role (MEMBER < EDITOR < EXECUTIVE < ADMIN).
+//    Anything with a `minRole` is visible to that rank and everything above it.
+//    Anything with `isPublic` is additionally visible to the outside world.
+//  * Nothing is hard-deleted that forms part of institutional memory. Users are
+//    archived, and AuditLog rows outlive the entities they describe (the actor
+//    relation is nullable on purpose).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+  // Migrations need a direct connection. Neon's pooled endpoint runs PgBouncer,
+  // which doesn't hold the session-level advisory lock Prisma takes while
+  // applying a migration — run one through the pooler and it can hang or fail
+  // partway. The app itself still uses the pooled `url` above.
+  //
+  // Locally there is no pooler, so both point at the same database.
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  MEMBER
+  EDITOR
+  EXECUTIVE
+  ADMIN
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  ARCHIVED
+}
+
+enum DocumentType {
+  MINUTES
+  ATTENDANCE
+  REPORT
+  TEMPLATE
+  GUIDELINE
+  CONSTITUTION
+  FINANCE
+  OTHER
+}
+
+enum EventType {
+  MEETING
+  DEADLINE
+  TRAINING
+  PUBLICATION
+  SOCIAL
+  OTHER
+}
+
+enum RsvpStatus {
+  ATTENDING
+  NOT_ATTENDING
+  MAYBE
+}
+
+enum PublicationType {
+  NEWSLETTER
+  MAGAZINE
+  ARTICLE
+  SPECIAL_EDITION
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AnnouncementPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum SubmissionType {
+  CONTACT
+  JOIN
+}
+
+enum BroadcastChannel {
+  SMS
+  // WHATSAPP slots in here when the Business API is set up.
+}
+
+enum BroadcastStatus {
+  SENDING
+  SENT
+  PARTIAL
+  FAILED
+}
+
+/// Ordered from best to worst outcome — the delivery log sorts on it.
+enum DeliveryStatus {
+  /// Confirmed as received by the handset, via a provider status callback.
+  DELIVERED
+  /// Accepted by the provider. Not the same as the person having got it.
+  SENT
+  QUEUED
+  /// The provider rejected it outright.
+  FAILED
+  /// The provider accepted it but the carrier could not deliver it.
+  UNDELIVERED
+  /// Had no usable phone number, or had opted out.
+  SKIPPED
+}
+
+enum SubmissionStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+// ---------------------------------------------------------------------------
+// People
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         Role       @default(MEMBER)
+  status       UserStatus @default(ACTIVE)
+
+  // Board identity
+  position    String? // e.g. "Editor-in-Chief", "Layout Editor"
+  bio         String?
+  avatarUrl   String?
+  phone       String?
+  classYear   String? // e.g. "Form 6 / Class of 2026"
+  isExecutive Boolean @default(false) // surfaced on the public About page
+  execOrder   Int     @default(0) // display order among executives
+
+  // Privacy — the member controls what the directory shows other members.
+  showEmail Boolean @default(true)
+  showPhone Boolean @default(false)
+
+  // Notification preferences. SMS costs real money per message and reaches
+  // people who aren't online, so it is reserved for urgent broadcasts — see
+  // the Broadcast model.
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(true)
+
+  joinedAt            DateTime  @default(now())
+  lastLoginAt         DateTime?
+  mustChangePassword  Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  announcements     Announcement[]     @relation("AnnouncementAuthor")
+  announcementReads AnnouncementRead[]
+  documents         Document[]         @relation("DocumentUploader")
+  events            Event[]            @relation("EventCreator")
+  rsvps             Rsvp[]
+  posts             Post[]             @relation("PostAuthor")
+  media             Media[]            @relation("MediaUploader")
+  tasksAssigned     Task[]             @relation("TaskAssignee")
+  tasksCreated      Task[]             @relation("TaskCreator")
+  auditLogs         AuditLog[]
+  broadcastsSent    Broadcast[]        @relation("BroadcastSender")
+  broadcastsGot     BroadcastRecipient[]
+
+  @@index([role, status])
+  @@index([isExecutive, execOrder])
+}
+
+// ---------------------------------------------------------------------------
+// Communication
+// ---------------------------------------------------------------------------
+
+model Announcement {
+  id       String               @id @default(cuid())
+  title    String
+  body     String
+  priority AnnouncementPriority @default(NORMAL)
+
+  // Empty array = everyone. Otherwise only these roles see it.
+  audienceRoles Role[] @default([])
+
+  pinned      Boolean   @default(false)
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime?
+
+  emailSentAt DateTime? // set once the email blast goes out
+
+  authorId String?
+  author   User?   @relation("AnnouncementAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  reads AnnouncementRead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([pinned, publishedAt])
+}
+
+// Read receipts — cheap to store, and it tells executives whether an urgent
+// notice actually landed.
+model AnnouncementRead {
+  id             String   @id @default(cuid())
+  announcementId String
+  userId         String
+  readAt         DateTime @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Records & documents
+// ---------------------------------------------------------------------------
+
+model Folder {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  parentId String?
+
+  parent   Folder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Folder[] @relation("FolderTree")
+
+  documents Document[]
+
+  createdAt DateTime @default(now())
+
+  @@index([parentId])
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  documents Document[]
+  createdAt DateTime   @default(now())
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  type        DocumentType @default(OTHER)
+
+  fileUrl  String
+  fileName String
+  fileSize Int // bytes
+  mimeType String
+
+  // The date the record refers to (e.g. the date of the meeting), which is not
+  // necessarily the date it was uploaded. Archive search sorts on this.
+  recordDate DateTime @default(now())
+
+  minRole  Role    @default(MEMBER)
+  isPublic Boolean @default(false)
+
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  tags Tag[]
+
+  uploadedById String?
+  uploadedBy   User?   @relation("DocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type, recordDate])
+  @@index([folderId])
+  @@index([isPublic])
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  agenda      String?
+  location    String?
+  type        EventType @default(MEETING)
+
+  startsAt DateTime
+  endsAt   DateTime?
+  allDay   Boolean   @default(false)
+
+  requiredMaterials String?
+
+  isPublic     Boolean @default(false) // also listed on the public site
+  rsvpEnabled  Boolean @default(true)
+  minRole      Role    @default(MEMBER)
+
+  reminderSentAt DateTime? // guards the 1-day-before email job
+
+  createdById String?
+  createdBy   User?   @relation("EventCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  rsvps Rsvp[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startsAt])
+  @@index([isPublic, startsAt])
+}
+
+model Rsvp {
+  id      String     @id @default(cuid())
+  eventId String
+  userId  String
+  status  RsvpStatus
+  note    String?
+
+  // Filled in afterwards by whoever runs the meeting — this is what turns
+  // RSVPs into an attendance record.
+  attended Boolean?
+
+  respondedAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Tasks / assignments
+// ---------------------------------------------------------------------------
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(NORMAL)
+  dueAt       DateTime?
+  completedAt DateTime?
+
+  assigneeId String?
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("TaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assigneeId, status])
+  @@index([dueAt])
+}
+
+// ---------------------------------------------------------------------------
+// Public content
+// ---------------------------------------------------------------------------
+
+model Publication {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  description String?
+  type        PublicationType @default(NEWSLETTER)
+  issueLabel  String? // e.g. "Vol. 3, Issue 2"
+
+  coverImageUrl String?
+  fileUrl       String? // the PDF
+  fileSize      Int?
+  pageCount     Int?
+
+  publishedAt DateTime @default(now())
+  featured    Boolean  @default(false)
+  isPublic    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([type, publishedAt])
+}
+
+model Post {
+  id      String     @id @default(cuid())
+  title   String
+  slug    String     @unique
+  excerpt String?
+  body    String
+  status  PostStatus @default(DRAFT)
+
+  coverImageUrl String?
+  publishedAt   DateTime?
+
+  authorId String?
+  author   User?   @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  achievedAt  DateTime
+  imageUrl    String?
+  featured    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([achievedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Media archive
+// ---------------------------------------------------------------------------
+
+model Album {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String?
+
+  // Public albums appear in the website gallery; private ones stay in the
+  // members' archive.
+  isPublic Boolean @default(false)
+
+  eventDate DateTime?
+
+  media Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublic, eventDate])
+}
+
+model Media {
+  id      String  @id @default(cuid())
+  albumId String?
+  album   Album?  @relation(fields: [albumId], references: [id], onDelete: SetNull)
+
+  url      String
+  caption  String?
+  mimeType String
+  fileSize Int
+  width    Int?
+  height   Int?
+
+  isPublic Boolean @default(false)
+
+  uploadedById String?
+  uploadedBy   User?   @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([albumId])
+  @@index([isPublic])
+}
+
+// ---------------------------------------------------------------------------
+// Inbound & audit
+// ---------------------------------------------------------------------------
+
+model Submission {
+  id      String           @id @default(cuid())
+  type    SubmissionType   @default(CONTACT)
+  status  SubmissionStatus @default(NEW)
+  name    String
+  email   String
+  phone   String?
+  subject String?
+  message String
+
+  // "Join the Board" extras
+  classYear      String?
+  interestArea   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Urgent broadcasts (SMS)
+// ---------------------------------------------------------------------------
+
+/**
+ * One send to many people.
+ *
+ * Unlike an Announcement — which waits for someone to log in — a broadcast
+ * pushes to phones, costs money per message, and cannot be recalled. So every
+ * send is recorded with its exact text, who authorised it, what it cost, and a
+ * per-recipient delivery row.
+ */
+model Broadcast {
+  id      String           @id @default(cuid())
+  channel BroadcastChannel @default(SMS)
+  status  BroadcastStatus  @default(SENDING)
+
+  /// Exactly what was sent, kept verbatim.
+  body String
+
+  /// Empty = everyone. Otherwise only these roles were targeted.
+  audienceRoles Role[] @default([])
+
+  /// Billing maths at send time, frozen so later price changes don't rewrite history.
+  segments       Int @default(1)
+  recipientCount Int @default(0)
+  sentCount      Int @default(0)
+  failedCount    Int @default(0)
+  skippedCount   Int @default(0)
+  /// Confirmed on the handset. Only moves once status callbacks come back, so
+  /// it lags `sentCount` by seconds to minutes.
+  deliveredCount Int @default(0)
+
+  /// Cost in minor units (pesewas, cents) — integers avoid float drift.
+  estimatedCost Int    @default(0)
+  currency      String @default("USD")
+
+  senderId String?
+  sender   User?   @relation("BroadcastSender", fields: [senderId], references: [id], onDelete: SetNull)
+  /// Snapshot, so the record survives the sender leaving the Board.
+  senderName String
+
+  recipients BroadcastRecipient[]
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model BroadcastRecipient {
+  id          String @id @default(cuid())
+  broadcastId String
+  broadcast   Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Snapshots — a delivery log has to stay readable years later.
+  name  String
+  phone String
+
+  status DeliveryStatus @default(QUEUED)
+
+  /// The provider's own id. Also how an inbound status callback finds this row.
+  providerMessageId String?
+  error             String?
+
+  sentAt      DateTime?
+  deliveredAt DateTime?
+
+  @@index([broadcastId, status])
+  @@index([userId])
+  @@index([providerMessageId])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  // Nullable so the trail survives the deletion of the person who acted.
+  actorId   String?
+  actor     User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName String // denormalised snapshot, kept even if the user is removed
+
+  action     String // "document.upload", "user.role_change", ...
+  entityType String
+  entityId   String?
+  summary    String
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
