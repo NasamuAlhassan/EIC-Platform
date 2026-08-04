@@ -126,6 +126,8 @@ docker run --name eic-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:
 | `npm run db:studio` | Browse the database in a GUI |
 | `npm run db:reset` | Drop everything and re-migrate ⚠️ |
 | `npm run export:backup` | Write a full JSON backup to `./backups` |
+| `npm run create:admin` | Create an administrator (needs database access) |
+| `npm run admin:sql` | Print SQL to create one, for when port 5432 is blocked |
 
 ---
 
@@ -363,6 +365,18 @@ DATABASE_URL="your-neon-direct-url" npm run create:admin -- \
 ```
 
 It prints a generated password once and requires a change on first sign-in.
+
+**If that can't reach the database** — school and office networks often block
+outbound Postgres (port 5432) — generate the SQL instead and run it from your
+provider's browser console, which connects from their side rather than yours:
+
+```bash
+npm run admin:sql -- --email you@yourschool.edu.gh --name "Your Name"
+```
+
+Paste the output into Neon's **SQL Editor** and run it. The password is hashed
+on your machine; the SQL contains only the hash. Re-running it resets that
+account's password, so it doubles as a recovery path.
 
 **Do not run `db:seed` against production.** That creates eight demo accounts
 sharing one password published in this README — fine locally, a hole on a live

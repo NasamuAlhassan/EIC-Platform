@@ -16,7 +16,8 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force",
     "export:backup": "tsx scripts/export-backup.ts",
-    "create:admin": "tsx scripts/create-admin.ts"
+    "create:admin": "tsx scripts/create-admin.ts",
+    "admin:sql": "tsx scripts/admin-sql.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
