@@ -55,8 +55,32 @@ export const IMAGE_MIME = new Set([
   "image/gif",
 ]);
 
+/**
+ * Can we actually store a file remotely from here?
+ *
+ * @vercel/blob accepts credentials two ways, and Vercel now provisions the
+ * second one by default:
+ *
+ *   BLOB_READ_WRITE_TOKEN                  — a long-lived token, any host
+ *   BLOB_STORE_ID + an OIDC token          — what "Connect Store" sets up
+ *
+ * Checking only for the token made a correctly-connected store look unset, so
+ * uploads silently fell back to local disk — which on Vercel is read-only, so
+ * every upload would have failed with the dashboard insisting storage was fine.
+ *
+ * The OIDC token is injected by the platform at runtime, so a store id alone is
+ * only usable when we're actually running on Vercel. Locally that combination
+ * would fail, and falling back to disk is the better answer there.
+ */
 export function isBlobConfigured() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  if (process.env.BLOB_READ_WRITE_TOKEN) return true;
+
+  const hasStore = Boolean(process.env.BLOB_STORE_ID);
+  const canMintOidc = Boolean(
+    process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL,
+  );
+
+  return hasStore && canMintOidc;
 }
 
 /** Strip anything that could escape the upload directory or confuse a browser. */
@@ -90,10 +114,14 @@ export async function putFile(
 
   if (isBlobConfigured()) {
     const { put } = await import("@vercel/blob");
+    // Only pass a token when we have one. Handing the SDK `undefined` is fine,
+    // but being explicit keeps the OIDC path obvious.
     const blob = await put(key, file, {
       access: "public",
       contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      ...(process.env.BLOB_READ_WRITE_TOKEN
+        ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+        : {}),
     });
     return {
       url: blob.url,
@@ -122,7 +150,11 @@ export async function deleteFile(url: string): Promise<void> {
   try {
     if (isBlobConfigured() && url.startsWith("http")) {
       const { del } = await import("@vercel/blob");
-      await del(url, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      await del(url, {
+        ...(process.env.BLOB_READ_WRITE_TOKEN
+          ? { token: process.env.BLOB_READ_WRITE_TOKEN }
+          : {}),
+      });
       return;
     }
 

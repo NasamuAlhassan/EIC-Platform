@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
   }
   if (!isBlobConfigured()) {
     warnings.push(
-      "File storage isn't configured (BLOB_READ_WRITE_TOKEN is unset) — uploads are saved to local disk, which will not work once deployed to Vercel.",
+      "File storage isn't configured — uploads are saved to local disk, which will not work once deployed. Create a Blob store and connect it to this project, or set BLOB_READ_WRITE_TOKEN.",
     );
   }
   if (!isSmsConfigured()) {
