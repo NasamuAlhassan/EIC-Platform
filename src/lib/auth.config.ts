@@ -46,15 +46,28 @@ export const authConfig = {
         token.mustChangePassword = user.mustChangePassword;
       }
 
-      // Lets the app refresh the token after a profile or password update
-      // without forcing a re-login. `session` here is the caller-supplied
-      // update payload, which Auth.js types as `any`.
+      /*
+       * Lets the app refresh the token after a profile or password update
+       * without forcing a re-login.
+       *
+       * The payload arrives in one of two shapes and Auth.js types it as `any`,
+       * so both are handled: `update({ name })` from a client component sends
+       * the fields flat, while `unstable_update({ user: { … } })` on the server
+       * nests them under `user`. Reading only the flat shape silently ignored
+       * the server-side call — which left `mustChangePassword` set after
+       * someone had changed their password, and the middleware then kept
+       * redirecting them back to do it again.
+       */
       if (trigger === "update" && session) {
-        const patch = session as {
+        type Patch = {
           name?: string;
           avatarUrl?: string | null;
           mustChangePassword?: boolean;
         };
+
+        const payload = session as Patch & { user?: Patch };
+        const patch: Patch = { ...payload, ...(payload.user ?? {}) };
+
         if (patch.name) token.name = patch.name;
         if (patch.avatarUrl !== undefined) token.avatarUrl = patch.avatarUrl;
         if (patch.mustChangePassword !== undefined) {

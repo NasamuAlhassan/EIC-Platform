@@ -1,5 +1,6 @@
 import "server-only";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 
@@ -14,7 +15,11 @@ export type PortalUser = {
   role: Role;
   position: string | null;
   avatarUrl: string | null;
+  mustChangePassword: boolean;
 };
+
+/** Where someone on a temporary password is held until they replace it. */
+const PASSWORD_PAGE = "/portal/profile";
 
 /**
  * Loads the signed-in member from the database rather than trusting the JWT.
@@ -37,10 +42,31 @@ export async function getPortalUser(): Promise<PortalUser> {
       position: true,
       avatarUrl: true,
       status: true,
+      mustChangePassword: true,
     },
   });
 
   if (!user || user.status === "ARCHIVED") redirect("/login");
+
+  /*
+   * Hold anyone still using an administrator-issued password on the profile
+   * page until they have set their own.
+   *
+   * The flag is read from the row we just loaded rather than from the session
+   * token, so it goes false the instant the password changes. An earlier
+   * version checked the token in middleware; the token could not be refreshed
+   * reliably, which meant a member who *had* changed their password was still
+   * redirected to change it — locked out of the site by the very check meant
+   * to protect them.
+   *
+   * `x-pathname` is set by middleware. If it is somehow absent we skip the
+   * check rather than guess, because guessing wrong here means a redirect loop
+   * on the page we would be redirecting to.
+   */
+  if (user.mustChangePassword) {
+    const pathname = (await headers()).get("x-pathname");
+    if (pathname && pathname !== PASSWORD_PAGE) redirect(PASSWORD_PAGE);
+  }
 
   const { status: _status, ...rest } = user;
   return rest;
