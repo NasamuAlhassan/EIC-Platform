@@ -275,6 +275,7 @@ p {
 .measure {
   max-width: 34em;
 }
+/* A phone is already narrower than any sensible measure. */
 .measure-wide {
   max-width: 42em;
 }
@@ -287,10 +288,16 @@ p {
   float: left;
   font-family: var(--font-display-stack);
   font-weight: 600;
-  font-size: 3.4em;
+  /* Smaller on a phone: three lines of cap leaves too little room beside it. */
+  font-size: 2.9em;
   line-height: 0.82;
   padding: 0.06em 0.09em 0 0;
   color: var(--ink);
+}
+@media (min-width: 640px) {
+  .dropcap > p:first-of-type::first-letter {
+    font-size: 3.4em;
+  }
 }
 
 /*
@@ -344,13 +351,21 @@ p {
  */
 .prose-editorial {
   font-family: var(--font-text);
-  font-size: 1.1875rem;
-  line-height: 1.68;
+  /* Phone first. 19px is a comfortable desktop measure and too loose on a
+     360px screen, where it costs a line break every few words. */
+  font-size: 1.0625rem;
+  line-height: 1.62;
   color: var(--ink);
   letter-spacing: -0.003em;
 }
 .prose-editorial > * + * {
   margin-top: 1.1em;
+}
+@media (min-width: 640px) {
+  .prose-editorial {
+    font-size: 1.1875rem;
+    line-height: 1.68;
+  }
 }
 .prose-editorial h2 {
   font-size: 1.5rem;
@@ -409,10 +424,16 @@ p {
 .standfirst {
   font-family: var(--font-display-stack);
   font-weight: 400;
-  font-size: 1.3125rem;
-  line-height: 1.45;
+  font-size: 1.125rem;
+  line-height: 1.4;
   color: var(--ink-2);
   text-wrap: pretty;
+}
+@media (min-width: 640px) {
+  .standfirst {
+    font-size: 1.3125rem;
+    line-height: 1.45;
+  }
 }
 
 .scrollbar-thin {

@@ -49,13 +49,18 @@ export function PublicNav() {
         className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6"
         aria-label="Main"
       >
-        <Link href="/" className="flex items-center gap-3 shrink-0 group">
-          <BoardMark size={38} />
-          <span className="flex flex-col leading-none">
-            <span className="font-serif text-[19px] font-semibold tracking-[-0.02em] text-ink">
+        <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <BoardMark size={32} className="sm:h-[38px] sm:w-[38px]" />
+          <span className="flex min-w-0 flex-col leading-none">
+            <span className="font-serif text-[17px] font-semibold tracking-[-0.02em] text-ink sm:text-[19px]">
               {site.boardName}
             </span>
-            <span className="label mt-1 hidden sm:block">
+            {/*
+              Shown on phones too. Most visitors arrive on one, and "EIC" alone
+              says nothing — the school is the context that makes it mean
+              anything.
+            */}
+            <span className="label mt-0.5 truncate text-[10px] sm:mt-1 sm:text-[11px]">
               {site.schoolName}
             </span>
           </span>

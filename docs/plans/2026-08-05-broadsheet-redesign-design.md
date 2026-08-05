@@ -120,6 +120,29 @@ The PDF reader is unchanged. It works, and styling would not improve it.
 
 ---
 
+## Mobile
+
+Most visitors arrive on a phone, so the layout is designed for one and scaled
+up rather than the reverse.
+
+Four things were genuinely broken at 384px before this was tested:
+
+- **The school name was hidden.** `hidden sm:block` meant a phone showed only
+  "EIC", which on its own says nothing. The school is the context that makes
+  the initials mean anything, so it now shows at every width.
+- **The lead cover filled an entire screen.** A 3:4 cover at full bleed is a
+  wall of image before any words. Capped to 190px on phones.
+- **Archive rows collapsed.** A fixed 144px label column squeezed titles into
+  three-line wraps. Rows now stack on a phone — label and date share a line,
+  the title gets its own — and return to a single row from 640px up.
+- **Type was set for a desktop.** Body copy, standfirsts, drop caps and the
+  lead headline all now start smaller and scale up at `sm`.
+
+Tap targets were audited rather than assumed: the menu button and unread badge
+were 36px and 24px, and event titles were 18px tall. All are now at least 40px.
+
+No horizontal overflow on any surface, public or portal.
+
 ## Verified
 
 Built and inspected in a browser, populated and empty, in both light and dark:

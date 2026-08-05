@@ -170,9 +170,9 @@ export function PortalShell({
           onClick={() => setOpen(true)}
           aria-label="Open menu"
           aria-expanded={open}
-          className="grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-surface-2"
+          className="-ml-1 grid h-11 w-11 place-items-center rounded-md text-ink-2 hover:bg-surface-2"
         >
-          <Menu size={19} />
+          <Menu size={20} />
         </button>
         <span className="font-serif text-[15px] font-semibold">
           {site.shortName}
@@ -180,9 +180,12 @@ export function PortalShell({
         {unreadCount > 0 ? (
           <Link
             href="/portal/announcements"
-            className="ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-white"
+            aria-label={`${unreadCount} unread announcements`}
+            className="-mr-2 ml-auto grid h-11 w-11 place-items-center"
           >
-            {unreadCount > 99 ? "99+" : unreadCount}
+            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-white">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
           </Link>
         ) : null}
       </div>

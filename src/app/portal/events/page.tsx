@@ -110,10 +110,11 @@ export default async function PortalEventsPage() {
                             ) : null}
                           </div>
 
-                          <h3 className="mt-1.5 font-serif text-[18px] leading-snug">
+                          <h3 className="mt-1 font-serif text-[18px] leading-snug">
+                            {/* Padded out to a thumb-sized target. */}
                             <Link
                               href={`/portal/events/${e.id}`}
-                              className="hover:text-brand"
+                              className="-mx-1 inline-block px-1 py-1.5 hover:text-brand"
                             >
                               {e.title}
                             </Link>

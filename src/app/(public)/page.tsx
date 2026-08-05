@@ -78,7 +78,7 @@ export default async function HomePage() {
                     : "Latest"}
                 </p>
 
-                <h1 className="mt-3 font-serif text-[40px] leading-[1.05] tracking-[-0.022em] sm:text-[56px]">
+                <h1 className="mt-3 font-serif text-[31px] leading-[1.06] tracking-[-0.02em] sm:text-[40px] lg:text-[56px]">
                   <Link
                     href={`/news/${leadStory.slug}`}
                     className="hover:text-brand"
@@ -116,7 +116,7 @@ export default async function HomePage() {
                */
               <div>
                 <p className="label label-accent">Established {site.foundedYear}</p>
-                <h1 className="mt-3 font-serif text-[40px] leading-[1.05] tracking-[-0.022em] sm:text-[54px]">
+                <h1 className="mt-3 font-serif text-[31px] leading-[1.06] tracking-[-0.02em] sm:text-[40px] lg:text-[54px]">
                   {site.fullName}
                 </h1>
                 <p className="standfirst measure-wide mt-5">{about.mission}</p>
@@ -172,7 +172,12 @@ export default async function HomePage() {
               </h2>
 
               <Link href={`/publications/${lead.slug}`} className="group block">
-                <div className="arch overflow-hidden border border-ink bg-surface-2">
+                {/*
+                  Capped on phones. At full width a 3:4 cover is an entire
+                  screen of image before any words, which on the device most
+                  people use is a wall, not a lead.
+                */}
+                <div className="arch mx-auto max-w-[190px] overflow-hidden border border-ink bg-surface-2 sm:mx-0 sm:max-w-none">
                   {lead.coverImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -196,7 +201,7 @@ export default async function HomePage() {
                   )}
                 </div>
 
-                <h3 className="mt-4 font-serif text-[21px] leading-snug group-hover:text-brand">
+                <h3 className="mt-4 font-serif text-[19px] leading-snug group-hover:text-brand sm:text-[21px]">
                   {lead.title}
                 </h3>
                 <p className="label mt-1.5">
@@ -255,18 +260,18 @@ export default async function HomePage() {
                     <li key={p.id}>
                       <Link
                         href={`/publications/${p.slug}`}
-                        className="group flex items-baseline gap-4 border-b border-line py-3"
+                        className="group grid gap-0.5 border-b border-line py-3 sm:flex sm:items-baseline sm:gap-4"
                       >
-                        <span className="label w-28 shrink-0">
+                        <span className="label sm:w-28 sm:shrink-0">
                           {p.issueLabel ?? formatDate(p.publishedAt)}
                         </span>
-                        <span className="min-w-0 flex-1 font-serif text-[17px] group-hover:text-brand">
+                        <span className="min-w-0 font-serif text-[17px] group-hover:text-brand sm:flex-1">
                           {p.title}
                         </span>
                         <ArrowRight
                           size={14}
                           aria-hidden
-                          className="shrink-0 text-ink-3 group-hover:text-brand"
+                          className="hidden shrink-0 text-ink-3 group-hover:text-brand sm:block"
                         />
                       </Link>
                     </li>

@@ -115,7 +115,7 @@ export default async function PublicationsPage({
         ) : null}
 
         <div
-          className="flex flex-wrap gap-1.5"
+          className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 scrollbar-thin sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
           role="group"
           aria-label="Filter by type"
         >
@@ -125,7 +125,7 @@ export default async function PublicationsPage({
               href={linkTo({ type: t, page: "1" })}
               aria-current={type === t ? "true" : undefined}
               className={cn(
-                "label border px-3 py-1.5 transition-colors",
+                "label whitespace-nowrap border px-3 py-1.5 transition-colors",
                 type === t
                   ? "border-ink bg-ink text-paper"
                   : "border-line-2 hover:border-ink hover:text-ink",
@@ -154,9 +154,10 @@ export default async function PublicationsPage({
             result "the current issue" would be a lie.
            */}
           {showLead && leadIssue ? (
-            <article className="mb-10 grid gap-8 border-b border-ink pb-10 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-10">
+            <article className="mb-9 grid gap-6 border-b border-ink pb-9 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-10">
               <Link href={`/publications/${leadIssue.slug}`} className="group block">
-                <div className="arch overflow-hidden border border-ink bg-surface-2">
+                {/* Capped on phones — see the note on the front page. */}
+                <div className="arch mx-auto max-w-[190px] overflow-hidden border border-ink bg-surface-2 sm:mx-0 sm:max-w-none">
                   {leadIssue.coverImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -176,7 +177,7 @@ export default async function PublicationsPage({
 
               <div className="min-w-0">
                 <p className="label label-accent">The current issue</p>
-                <h2 className="mt-2.5 font-serif text-[30px] leading-tight sm:text-[36px]">
+                <h2 className="mt-2.5 font-serif text-[25px] leading-tight sm:text-[30px] lg:text-[36px]">
                   <Link
                     href={`/publications/${leadIssue.slug}`}
                     className="hover:text-brand"
@@ -209,21 +210,24 @@ export default async function PublicationsPage({
                 <li key={p.id}>
                   <Link
                     href={`/publications/${p.slug}`}
-                    className="group flex flex-wrap items-baseline gap-x-5 gap-y-1 border-b border-line py-4"
+                    className="group block border-b border-line py-3.5 sm:flex sm:items-baseline sm:gap-5"
                   >
-                    <span className="label w-36 shrink-0">
-                      {p.issueLabel ?? PUBLICATION_LABEL[p.type]}
+                    {/* Phone: label and date share a line, title gets its own. */}
+                    <span className="flex items-baseline justify-between gap-3 sm:contents">
+                      <span className="label sm:w-36 sm:shrink-0">
+                        {p.issueLabel ?? PUBLICATION_LABEL[p.type]}
+                      </span>
+                      <span className="label shrink-0 sm:order-3">
+                        {formatDate(p.publishedAt)}
+                      </span>
                     </span>
-                    <span className="min-w-0 flex-1 font-serif text-[19px] group-hover:text-brand">
+                    <span className="mt-1 block min-w-0 font-serif text-[18px] leading-snug group-hover:text-brand sm:mt-0 sm:flex-1 sm:text-[19px]">
                       {p.title}
-                    </span>
-                    <span className="label shrink-0">
-                      {formatDate(p.publishedAt)}
                     </span>
                     <ArrowRight
                       size={14}
                       aria-hidden
-                      className="shrink-0 text-ink-3 group-hover:text-brand"
+                      className="hidden shrink-0 text-ink-3 group-hover:text-brand sm:order-4 sm:block"
                     />
                   </Link>
                 </li>
