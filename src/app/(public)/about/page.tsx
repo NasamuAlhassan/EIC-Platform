@@ -3,7 +3,8 @@ import { ArrowRight } from "lucide-react";
 
 import { db } from "@/lib/db";
 import { site, about } from "@/lib/config";
-import { Avatar, ButtonLink } from "@/components/ui";
+import { ButtonLink } from "@/components/ui";
+import { initials } from "@/lib/utils";
 import { SectionHeading } from "@/components/public-cards";
 
 export const revalidate = 300;
@@ -75,30 +76,56 @@ export default async function AboutPage() {
           />
 
           {executives.length > 0 ? (
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            /*
+              Portraits large enough to actually be portraits. The old layout
+              put people at 52px beside their own titles, which reads as a
+              footnote — the wrong register for the page that introduces the
+              Board to the school.
+
+              Each sits in the arch, the same frame the current issue gets. It
+              is the shape from the crest, and using it for the people as well
+              as the publications says they belong to the same institution.
+            */
+            <ul className="grid grid-cols-2 gap-x-5 gap-y-9 lg:grid-cols-3 lg:gap-x-8">
               {executives.map((e) => (
-                <li
-                  key={e.id}
-                  className="rounded-[var(--radius)] border border-line bg-paper p-5"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <Avatar name={e.name} src={e.avatarUrl} size={52} />
-                    <div className="min-w-0">
-                      <p className="truncate font-serif text-[17px]">{e.name}</p>
-                      {e.position ? (
-                        <p className="truncate text-[13px] font-medium text-brand">
-                          {e.position}
-                        </p>
-                      ) : null}
-                      {e.classYear ? (
-                        <p className="truncate text-[12.5px] text-ink-3">
-                          {e.classYear}
-                        </p>
-                      ) : null}
-                    </div>
+                <li key={e.id}>
+                  <div className="arch overflow-hidden border border-ink bg-surface-2">
+                    {e.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={e.avatarUrl}
+                        alt=""
+                        loading="lazy"
+                        className="aspect-[3/4] w-full object-cover"
+                      />
+                    ) : (
+                      /*
+                        Most members will not have uploaded a photograph yet.
+                        An empty frame with their initials set properly is a
+                        placeholder; a broken image icon is an apology.
+                      */
+                      <div className="grid aspect-[3/4] w-full place-items-center">
+                        <span
+                          aria-hidden
+                          className="font-serif text-[42px] leading-none text-ink-3 sm:text-[48px]"
+                        >
+                          {initials(e.name)}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  <h3 className="mt-3.5 font-serif text-[18px] leading-snug sm:text-[20px]">
+                    {e.name}
+                  </h3>
+                  {e.position ? (
+                    <p className="label label-accent mt-1.5">{e.position}</p>
+                  ) : null}
+                  {e.classYear ? (
+                    <p className="label mt-1">{e.classYear}</p>
+                  ) : null}
                   {e.bio ? (
-                    <p className="mt-3.5 text-[13.5px] leading-relaxed text-ink-2">
+                    <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-2">
                       {e.bio}
                     </p>
                   ) : null}
@@ -106,7 +133,7 @@ export default async function AboutPage() {
               ))}
             </ul>
           ) : (
-            <p className="rounded-[var(--radius)] border border-dashed border-line-2 px-4 py-10 text-center text-sm text-ink-3">
+            <p className="border border-dashed border-line-2 px-4 py-10 text-center text-sm text-ink-3">
               Executives haven&apos;t been published yet. An administrator can
               mark members as executives in the admin area, and they&apos;ll
               appear here.
