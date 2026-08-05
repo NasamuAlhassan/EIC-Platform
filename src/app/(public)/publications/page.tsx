@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, BookOpen } from "lucide-react";
+import { Search, BookOpen, ArrowRight } from "lucide-react";
 import type { PublicationType, Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { site } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { Input, EmptyState } from "@/components/ui";
-import { PublicationCard, PUBLICATION_LABEL } from "@/components/public-cards";
+import { PUBLICATION_LABEL } from "@/components/public-cards";
 
 export const metadata: Metadata = {
   title: "Publications",
@@ -62,6 +62,11 @@ export default async function PublicationsPage({
 
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
 
+  // Lead on the newest issue, but only when looking at the whole archive.
+  const showLead = page === 1 && !q && type === "ALL";
+  const leadIssue = showLead ? publications[0] : null;
+  const rest = leadIssue ? publications.slice(1) : publications;
+
   /** Preserve the current filters when switching one of them. */
   const linkTo = (next: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
@@ -76,9 +81,7 @@ export default async function PublicationsPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
       <header className="mb-9">
-        <p className="text-[12px] font-medium uppercase tracking-wider text-accent">
-          The archive
-        </p>
+        <p className="label label-accent">The archive</p>
         <h1 className="mt-2.5 font-serif text-[36px] leading-tight tracking-tight sm:text-[42px]">
           Publications
         </h1>
@@ -122,10 +125,10 @@ export default async function PublicationsPage({
               href={linkTo({ type: t, page: "1" })}
               aria-current={type === t ? "true" : undefined}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-[13px] transition-colors",
+                "label border px-3 py-1.5 transition-colors",
                 type === t
-                  ? "border-brand bg-brand text-brand-ink"
-                  : "border-line-2 text-ink-2 hover:border-brand hover:text-brand",
+                  ? "border-ink bg-ink text-paper"
+                  : "border-line-2 hover:border-ink hover:text-ink",
               )}
             >
               {t === "ALL" ? "All" : PUBLICATION_LABEL[t]}
@@ -141,11 +144,92 @@ export default async function PublicationsPage({
             {q ? <> matching “{q}”</> : null}
           </p>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {publications.map((p) => (
-              <PublicationCard key={p.id} publication={p} />
-            ))}
-          </div>
+          {/*
+            A four-column grid of covers is a shop. An archive is a record: the
+            current issue shown properly, and everything before it as a list you
+            can run your eye down. It stays readable at fifty issues, where a
+            grid becomes wallpaper.
+
+            The lead only appears unfiltered on the first page — inside a search
+            result "the current issue" would be a lie.
+           */}
+          {showLead && leadIssue ? (
+            <article className="mb-10 grid gap-8 border-b border-ink pb-10 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-10">
+              <Link href={`/publications/${leadIssue.slug}`} className="group block">
+                <div className="arch overflow-hidden border border-ink bg-surface-2">
+                  {leadIssue.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={leadIssue.coverImageUrl}
+                      alt={`Cover of ${leadIssue.title}`}
+                      className="aspect-[3/4] w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid aspect-[3/4] w-full place-items-center bg-brand px-5 pb-5 pt-14 text-center text-brand-ink">
+                      <p className="font-serif text-[24px] leading-tight">
+                        {leadIssue.title}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Link>
+
+              <div className="min-w-0">
+                <p className="label label-accent">The current issue</p>
+                <h2 className="mt-2.5 font-serif text-[30px] leading-tight sm:text-[36px]">
+                  <Link
+                    href={`/publications/${leadIssue.slug}`}
+                    className="hover:text-brand"
+                  >
+                    {leadIssue.title}
+                  </Link>
+                </h2>
+                <p className="label mt-2">
+                  {leadIssue.issueLabel ? `${leadIssue.issueLabel} · ` : ""}
+                  {formatDate(leadIssue.publishedAt)}
+                  {leadIssue.pageCount ? ` · ${leadIssue.pageCount} pages` : ""}
+                </p>
+                {leadIssue.description ? (
+                  <p className="standfirst mt-4">{leadIssue.description}</p>
+                ) : null}
+                <Link
+                  href={`/publications/${leadIssue.slug}`}
+                  className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-brand hover:underline"
+                >
+                  Read this issue
+                  <ArrowRight size={15} aria-hidden />
+                </Link>
+              </div>
+            </article>
+          ) : null}
+
+          {rest.length > 0 ? (
+            <ul>
+              {rest.map((p) => (
+                <li key={p.id}>
+                  <Link
+                    href={`/publications/${p.slug}`}
+                    className="group flex flex-wrap items-baseline gap-x-5 gap-y-1 border-b border-line py-4"
+                  >
+                    <span className="label w-36 shrink-0">
+                      {p.issueLabel ?? PUBLICATION_LABEL[p.type]}
+                    </span>
+                    <span className="min-w-0 flex-1 font-serif text-[19px] group-hover:text-brand">
+                      {p.title}
+                    </span>
+                    <span className="label shrink-0">
+                      {formatDate(p.publishedAt)}
+                    </span>
+                    <ArrowRight
+                      size={14}
+                      aria-hidden
+                      className="shrink-0 text-ink-3 group-hover:text-brand"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           {pages > 1 ? (
             <nav
@@ -158,10 +242,10 @@ export default async function PublicationsPage({
                   href={linkTo({ page: String(n) })}
                   aria-current={n === page ? "page" : undefined}
                   className={cn(
-                    "grid h-9 min-w-9 place-items-center rounded-md px-2.5 text-sm",
+                    "grid h-9 min-w-9 place-items-center px-2.5 text-sm",
                     n === page
-                      ? "bg-brand text-brand-ink font-medium"
-                      : "border border-line text-ink-2 hover:border-brand hover:text-brand",
+                      ? "bg-ink font-medium text-paper"
+                      : "border border-line text-ink-2 hover:border-ink hover:text-ink",
                   )}
                 >
                   {n}

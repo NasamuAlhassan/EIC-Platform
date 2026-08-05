@@ -106,20 +106,38 @@ export default async function HomePage() {
                 </Link>
               </article>
             ) : (
-              /* Nothing published yet — say what the Board is, plainly. */
+              /*
+               * Nothing published yet.
+               *
+               * A front page with no stories still has a job: say who this is
+               * and give a way in. It deliberately does not link to the
+               * archive, which would be empty — an invitation to a blank room
+               * is worse than no invitation.
+               */
               <div>
-                <h1 className="font-serif text-[40px] leading-[1.05] tracking-[-0.022em] sm:text-[54px]">
-                  {site.boardName}
+                <p className="label label-accent">Established {site.foundedYear}</p>
+                <h1 className="mt-3 font-serif text-[40px] leading-[1.05] tracking-[-0.022em] sm:text-[54px]">
+                  {site.fullName}
                 </h1>
                 <p className="standfirst measure-wide mt-5">{about.mission}</p>
-                <ButtonLink
-                  href="/publications"
-                  size="lg"
-                  className="mt-7 rounded-none"
-                >
-                  <BookOpen size={17} aria-hidden />
-                  Read our publications
-                </ButtonLink>
+                <p className="measure mt-5 text-[15px] leading-relaxed text-ink-2">
+                  The first issue is on its way. Until then, the Board is
+                  reading, reporting, and looking for people who want to write.
+                </p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <ButtonLink href="/contact#join" size="lg" className="rounded-none">
+                    Write for us
+                    <ArrowRight size={16} aria-hidden />
+                  </ButtonLink>
+                  <ButtonLink
+                    href="/about"
+                    variant="secondary"
+                    size="lg"
+                    className="rounded-none"
+                  >
+                    Meet the Board
+                  </ButtonLink>
+                </div>
               </div>
             )}
 
@@ -219,7 +237,13 @@ export default async function HomePage() {
       {/* --------------------------------------------- Back issues + calendar */}
       <section className="border-t border-line">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <div className="grid gap-10 lg:grid-cols-[1.55fr_1fr] lg:gap-14">
+          <div
+            className={
+              backIssues.length > 0
+                ? "grid gap-10 lg:grid-cols-[1.55fr_1fr] lg:gap-14"
+                : "grid gap-10"
+            }
+          >
             {backIssues.length > 0 ? (
               <div className="min-w-0">
                 <h2 className="label section-marker mb-5">
@@ -257,11 +281,13 @@ export default async function HomePage() {
                   <ArrowRight size={14} aria-hidden />
                 </Link>
               </div>
-            ) : (
-              <div />
-            )}
+            ) : null}
 
-            <div className="lg:border-l lg:border-line lg:pl-10">
+            <div
+              className={
+                backIssues.length > 0 ? "lg:border-l lg:border-line lg:pl-10" : ""
+              }
+            >
               <h2 className="label section-marker mb-5">
                 <span className="shrink-0">What&apos;s coming up</span>
               </h2>

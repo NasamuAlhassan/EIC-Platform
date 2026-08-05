@@ -305,7 +305,12 @@ p {
  * which is what makes it read as a shape rather than as styling.
  */
 .arch {
-  border-radius: 50vw 50vw 0 0 / 32% 32% 0 0;
+  /*
+   * A true semi-ellipse: horizontal radius is half the width, so the curve
+   * spans the whole top rather than rounding two corners. The crest's arch is
+   * a horseshoe, and a shallower curve just reads as a rounded rectangle.
+   */
+  border-radius: 50% 50% 0 0 / 38% 38% 0 0;
 }
 
 /* The dateline strip: volume, issue, and date, the way a paper carries them. */
