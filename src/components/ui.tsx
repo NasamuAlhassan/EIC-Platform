@@ -480,11 +480,11 @@ export function Divider({ label }: { label?: string }) {
    ========================================================================== */
 
 /**
- * The square monogram used in the nav, footer, portal, and login screen.
+ * The Board's mark, used in the nav, footer, portal sidebar, and sign-in page.
  *
- * Sizes itself to the number of letters — a three-letter monogram like "EIC"
- * needs smaller, tighter type than a single initial, and truncating it to one
- * character would throw away the Board's identity.
+ * Renders `site.logo` when one is set, and falls back to a lettered square.
+ * Both are always available, so the site never shows a broken image while a
+ * logo is being sorted out.
  */
 export function BoardMark({
   size = 32,
@@ -493,6 +493,29 @@ export function BoardMark({
   size?: number;
   className?: string;
 }) {
+  if (site.logo) {
+    return (
+      /*
+       * Decorative: the Board's name sits next to this everywhere it appears,
+       * so announcing the logo too would just repeat it to a screen reader.
+       *
+       * `object-contain` because a crest is rarely square — letting it stretch
+       * to fill would distort it. A plain <img> rather than next/image, since
+       * this is a fixed-size local asset and needs no optimisation pipeline.
+       */
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={site.logo}
+        alt=""
+        aria-hidden
+        width={size}
+        height={size}
+        className={cn("shrink-0 object-contain", className)}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
   const text = site.monogram;
 
   // Ratios tuned so 1, 2, and 3 letters all sit comfortably in the square.

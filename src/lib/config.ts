@@ -18,8 +18,23 @@ export const site = {
   /**
    * The letters in the logo mark. One to three characters — more won't fit the
    * square.
+   *
+   * Only used when `logo` below is null.
    */
   monogram: "EIC",
+
+  /**
+   * Path to a real logo or crest, served from /public — e.g. "/logo.png".
+   *
+   * Set this and it replaces the monogram everywhere: the site header, the
+   * footer, the portal sidebar, and the sign-in page. Leave it null and the
+   * lettered square is used instead.
+   *
+   * Use a square-ish image with a transparent background. It is drawn small
+   * (32px in the header), so a crest with fine detail or small text will not
+   * read — a simplified version reproduces far better at that size.
+   */
+  logo: "/logo.png" as string | null,
 
   schoolName: "Osei Tutu Senior High School",
 
