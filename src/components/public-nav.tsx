@@ -44,7 +44,7 @@ export function PublicNav() {
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <header className="sticky top-0 z-40 masthead-rule bg-paper/92 backdrop-blur-md">
+    <header className="glass masthead-rule sticky top-0 z-40">
       <nav
         className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6"
         aria-label="Main"
@@ -112,7 +112,7 @@ export function PublicNav() {
       {open ? (
         <div
           id="mobile-menu"
-          className="border-t border-line bg-paper lg:hidden"
+          className="glass border-t border-line lg:hidden"
         >
           <ul className="mx-auto max-w-6xl px-4 py-2 sm:px-6">
             {links.map((l) => (

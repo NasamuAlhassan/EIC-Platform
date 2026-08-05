@@ -147,7 +147,7 @@ export function AdminShell({
 
   return (
     <div className="min-h-screen lg:flex">
-      <aside className="shrink-0 border-b border-line bg-surface lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+      <aside className="glass shrink-0 border-b border-line lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="border-b border-line pb-3">
           <ViewSwitcher role={role} current="admin" />
         </div>

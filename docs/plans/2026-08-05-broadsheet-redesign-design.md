@@ -120,6 +120,41 @@ The PDF reader is unchanged. It works, and styling would not improve it.
 
 ---
 
+## Glass
+
+The chrome that floats above the page — masthead, mobile menu, portal and admin
+rails — is frosted glass. The page itself stays flat ink on paper.
+
+That split is the point rather than a compromise. A newspaper has no interface,
+so the interface being glass and the content being paper draws a real line
+between the two.
+
+Three limits, each deliberate:
+
+- **Chrome only.** `backdrop-filter` makes the compositor re-blur whatever sits
+  behind it every frame. One fixed element is cheap; twenty scrolling cards is
+  visible jank on the mid-range Android most of this audience carries.
+- **Tint before blur.** The background is opaque enough (~72%) to hold contrast
+  on its own, so text stays readable over a dark photograph. Blur is the finish,
+  not the legibility.
+- **Both escape hatches.** A solid fallback where `backdrop-filter` is
+  unsupported, and no transparency at all for readers whose system asks for
+  less.
+
+### Two collisions this caused
+
+Worth recording, because both were silent:
+
+- `.glass` set `position: relative` so a pseudo-element could draw the specular
+  edge. That beat the `sticky` utility on the masthead and the header stopped
+  sticking. The edge is now drawn with inset shadows, which need no positioning
+  context and compose with anything.
+- `.glass` and `.masthead-rule` both set `box-shadow`, so adding glass wiped out
+  the double rule under the masthead. The rule is now a real `3px double`
+  border — a different property, so the two cannot fight.
+
+A finish should never be able to break layout.
+
 ## Mobile
 
 Most visitors arrive on a phone, so the layout is designed for one and scaled

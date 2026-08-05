@@ -159,12 +159,12 @@ export function PortalShell({
   return (
     <div className="min-h-screen lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-line bg-surface lg:sticky lg:top-0 lg:block lg:h-screen">
+      <aside className="glass hidden w-64 shrink-0 border-r border-line lg:sticky lg:top-0 lg:block lg:h-screen">
         {sidebar}
       </aside>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface px-4 lg:hidden">
+      <div className="glass sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line px-4 lg:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -194,11 +194,11 @@ export function PortalShell({
       {open ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-y-0 left-0 w-72 border-r border-line bg-surface shadow-pop">
+          <div className="glass-panel absolute inset-y-0 left-0 w-72 border-y-0 border-l-0">
             <button
               type="button"
               onClick={() => setOpen(false)}
