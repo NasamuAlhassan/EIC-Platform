@@ -116,7 +116,9 @@ export default async function PublicEventPage({ params }: Props) {
 
         {event.agenda ? (
           <section className="mt-9">
-            <h2 className="rule-accent font-serif text-[22px]">Agenda</h2>
+            <h2 className="section-marker font-serif text-[22px]">
+            <span className="shrink-0">Agenda</span>
+          </h2>
             <div className="prose-editorial mt-5">
               {event.agenda.split(/\n{2,}/).map((p, i) => (
                 <p key={i}>{p}</p>

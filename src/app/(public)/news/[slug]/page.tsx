@@ -75,31 +75,40 @@ export default async function PostPage({ params }: Props) {
 
       <article className="mt-6">
         <header>
-          <h1 className="font-serif text-[34px] leading-[1.15] tracking-tight sm:text-[42px]">
+          {/* Kicker: section and date, the way a paper labels a story. */}
+          <p className="label label-accent">
+            News
+            {post.publishedAt ? (
+              <>
+                {" · "}
+                <time dateTime={post.publishedAt.toISOString()}>
+                  {formatFullDate(post.publishedAt)}
+                </time>
+              </>
+            ) : null}
+          </p>
+
+          <h1 className="mt-3 font-serif text-[38px] leading-[1.06] tracking-[-0.022em] sm:text-[48px]">
             {post.title}
           </h1>
 
-          <div className="mt-5 flex items-center gap-3 border-b border-line pb-5">
+          {post.excerpt ? (
+            <p className="standfirst measure-wide mt-5">{post.excerpt}</p>
+          ) : null}
+
+          {/* The byline sits between rules, as it does in print. */}
+          <div className="mt-7 flex items-center gap-3 border-y border-line py-3">
             {post.author ? (
               <Avatar
                 name={post.author.name}
                 src={post.author.avatarUrl}
-                size={40}
+                size={32}
               />
             ) : null}
-            <div className="text-[13.5px]">
-              {post.author ? (
-                <p className="font-medium text-ink">{post.author.name}</p>
-              ) : null}
-              <p className="text-ink-3">
-                {post.author?.position ? <>{post.author.position} · </> : null}
-                {post.publishedAt ? (
-                  <time dateTime={post.publishedAt.toISOString()}>
-                    {formatFullDate(post.publishedAt)}
-                  </time>
-                ) : null}
-              </p>
-            </div>
+            <p className="label">
+              {post.author?.name ?? "The Board"}
+              {post.author?.position ? ` · ${post.author.position}` : ""}
+            </p>
           </div>
         </header>
 
@@ -108,20 +117,14 @@ export default async function PostPage({ params }: Props) {
           <img
             src={post.coverImageUrl}
             alt=""
-            className="mt-7 aspect-[16/9] w-full rounded-[var(--radius)] border border-line object-cover"
+            className="mt-7 aspect-[16/9] w-full border border-line object-cover"
           />
-        ) : null}
-
-        {post.excerpt ? (
-          <p className="mt-7 font-serif text-[20px] leading-relaxed text-ink">
-            {post.excerpt}
-          </p>
         ) : null}
 
         {/* Body is stored as plain text with blank-line paragraphs. Rendering it
             as text rather than HTML means a compromised editor account can't
             inject scripts into a public page. */}
-        <div className="prose-editorial mt-7">
+        <div className="prose-editorial dropcap measure mt-8">
           {post.body.split(/\n{2,}/).map((para, i) => (
             <p key={i}>{para}</p>
           ))}
@@ -130,7 +133,9 @@ export default async function PostPage({ params }: Props) {
 
       {more.length > 0 ? (
         <section className="mt-16 border-t border-line pt-8">
-          <h2 className="rule-accent font-serif text-[22px]">More from the Board</h2>
+          <h2 className="section-marker font-serif text-[22px]">
+            <span className="shrink-0">More from the Board</span>
+          </h2>
           <div className="mt-5">
             {more.map((p) => (
               <PostCard key={p.id} post={p} authorName={p.author?.name} />

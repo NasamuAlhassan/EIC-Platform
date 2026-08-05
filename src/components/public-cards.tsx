@@ -46,10 +46,10 @@ export function PublicationCard({
   >;
 }) {
   return (
-    <article className="group flex flex-col overflow-hidden rounded-[var(--radius)] border border-line bg-surface shadow-card transition-shadow hover:shadow-pop">
+    <article className="group flex flex-col border-t border-ink pt-3">
       <Link
         href={`/publications/${publication.slug}`}
-        className="relative block aspect-[3/4] overflow-hidden bg-surface-2"
+        className="relative block aspect-[3/4] overflow-hidden bg-surface-2 border border-line"
       >
         {publication.coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -69,11 +69,9 @@ export function PublicationCard({
         </span>
       </Link>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col pt-3">
         {publication.issueLabel ? (
-          <p className="text-[11.5px] font-medium uppercase tracking-wider text-ink-3">
-            {publication.issueLabel}
-          </p>
+          <p className="label">{publication.issueLabel}</p>
         ) : null}
         <h3 className="mt-1 font-serif text-[17px] leading-snug">
           <Link
@@ -174,11 +172,11 @@ export function EventCard({
   const link = href ?? `/events/${event.id}`;
 
   return (
-    <article className="flex gap-4 rounded-[var(--radius)] border border-line bg-surface p-4 shadow-card">
+    <article className="flex gap-4 border-t border-line py-4 first:border-t-0">
       {/* Tear-off calendar chip — scannable at a glance in a long list. */}
       <div
         aria-hidden
-        className="grid h-14 w-14 shrink-0 place-items-center rounded-[var(--radius)] border border-line bg-surface-2 leading-none"
+        className="grid h-14 w-14 shrink-0 place-items-center border border-ink leading-none"
       >
         <span className="text-[10.5px] font-semibold uppercase tracking-wider text-accent">
           {start.toLocaleString("en", { month: "short" })}
@@ -231,7 +229,7 @@ export function AchievementCard({
   >;
 }) {
   return (
-    <article className="overflow-hidden rounded-[var(--radius)] border border-line bg-surface shadow-card">
+    <article className="overflow-hidden border-t border-ink pt-4">
       {achievement.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -241,8 +239,8 @@ export function AchievementCard({
           className="aspect-[16/9] w-full object-cover"
         />
       ) : null}
-      <div className="p-5">
-        <p className="inline-flex items-center gap-1.5 text-[12px] font-medium uppercase tracking-wider text-accent">
+      <div className="pt-4">
+        <p className="label label-accent inline-flex items-center gap-1.5">
           <CalendarDays size={13} aria-hidden />
           {formatDate(achievement.achievedAt)}
         </p>
@@ -272,12 +270,12 @@ export function SectionHeading({
 }) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h2 className="rule-accent font-serif text-[26px] tracking-tight sm:text-[30px]">
-          {title}
+      <div className="min-w-0 flex-1">
+        <h2 className="section-marker font-serif text-[26px] tracking-tight sm:text-[30px]">
+          <span className="shrink-0">{title}</span>
         </h2>
         {description ? (
-          <p className="mt-3.5 max-w-xl text-[14.5px] leading-relaxed text-ink-2">
+          <p className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-ink-2">
             {description}
           </p>
         ) : null}

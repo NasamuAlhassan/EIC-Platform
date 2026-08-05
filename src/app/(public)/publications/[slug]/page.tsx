@@ -184,8 +184,8 @@ export default async function PublicationPage({ params }: Props) {
 
       {related.length > 0 ? (
         <section className="mt-16 border-t border-line pt-10">
-          <h2 className="rule-accent font-serif text-[24px]">
-            More {PUBLICATION_LABEL[publication.type].toLowerCase()}s
+          <h2 className="section-marker font-serif text-[24px]">
+            <span className="shrink-0">More {PUBLICATION_LABEL[publication.type].toLowerCase()}s</span>
           </h2>
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((p) => (

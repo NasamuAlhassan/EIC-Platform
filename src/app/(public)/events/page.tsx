@@ -83,7 +83,9 @@ export default async function EventsPage() {
 
       {past.length > 0 ? (
         <section className="mt-16 border-t border-line pt-9">
-          <h2 className="rule-accent font-serif text-[24px]">Recently held</h2>
+          <h2 className="section-marker font-serif text-[24px]">
+            <span className="shrink-0">Recently held</span>
+          </h2>
           <div className="mt-6 space-y-3 opacity-75">
             {past.map((e) => (
               <EventCard key={e.id} event={e} />

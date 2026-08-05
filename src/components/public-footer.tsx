@@ -39,8 +39,17 @@ export function PublicFooter() {
   ].filter((s) => s.href);
 
   return (
-    <footer className="mt-20 border-t border-line bg-surface">
+    <footer className="mt-20 border-t border-ink bg-paper">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        {/*
+          The school motto, set as a rule-break. It is on the crest and it is
+          what the Board publishes under — it belongs on the page, not just on
+          the badge.
+        */}
+        <p className="motto label mb-12 text-center">
+          <span className="whitespace-nowrap">My utmost for His highest</span>
+        </p>
+
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <div className="flex items-center gap-2.5">
@@ -95,9 +104,7 @@ export function PublicFooter() {
 
           {columns.map((col) => (
             <div key={col.heading}>
-              <h3 className="font-sans text-[12px] font-semibold uppercase tracking-wider text-ink-3">
-                {col.heading}
-              </h3>
+              <h3 className="label">{col.heading}</h3>
               <ul className="mt-3 space-y-2">
                 {col.links.map((l) => (
                   <li key={l.href}>

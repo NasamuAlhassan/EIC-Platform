@@ -44,34 +44,35 @@ export function PublicNav() {
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 masthead-rule bg-paper/92 backdrop-blur-md">
       <nav
         className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6"
         aria-label="Main"
       >
-        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <BoardMark size={32} />
+        <Link href="/" className="flex items-center gap-3 shrink-0 group">
+          <BoardMark size={38} />
           <span className="flex flex-col leading-none">
-            <span className="font-serif text-[16px] font-semibold tracking-tight text-ink">
-              {site.shortName}
+            <span className="font-serif text-[19px] font-semibold tracking-[-0.02em] text-ink">
+              {site.boardName}
             </span>
-            <span className="mt-0.5 text-[11px] text-ink-3 hidden sm:block">
+            <span className="label mt-1 hidden sm:block">
               {site.schoolName}
             </span>
           </span>
         </Link>
 
-        <ul className="ml-auto hidden items-center gap-1 lg:flex">
+        {/* Small caps and letterspacing: nav as page furniture, not buttons. */}
+        <ul className="ml-auto hidden items-center gap-6 lg:flex">
           {links.map((l) => (
             <li key={l.href}>
               <Link
                 href={l.href}
                 aria-current={isActive(l.href) ? "page" : undefined}
                 className={cn(
-                  "rounded-md px-3 py-2 text-[14px] transition-colors",
+                  "label py-2 transition-colors",
                   isActive(l.href)
-                    ? "text-ink font-medium bg-surface-2"
-                    : "text-ink-2 hover:text-ink hover:bg-surface-2",
+                    ? "text-ink border-b-2 border-accent"
+                    : "hover:text-ink",
                 )}
               >
                 {l.label}
@@ -83,7 +84,7 @@ export function PublicNav() {
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <Link
             href="/login"
-            className={buttonClass("primary", "sm", "hidden sm:inline-flex")}
+            className={buttonClass("primary", "sm", "hidden rounded-none sm:inline-flex")}
           >
             <LogIn size={15} aria-hidden />
             Members

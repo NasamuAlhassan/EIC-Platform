@@ -2,39 +2,46 @@
 
 /*
  * ---------------------------------------------------------------------------
- * Design tokens
+ * Design tokens — "broadsheet"
  * ---------------------------------------------------------------------------
- * An editorial palette: warm paper, ink text, a navy masthead colour, and a
- * single muted crimson accent used sparingly for emphasis.
+ * The Board publishes a magazine, so the site is set like one: rules, ink, and
+ * whitespace do the structural work, not cards and shadows.
  *
- * Semantic names only — components never reference a raw hex. Dark mode swaps
- * the variables underneath, so nothing downstream has to know about it.
+ * The palette is taken from the school crest rather than invented. Sampling it
+ * gives black, a royal blue (#1000D0) and a teal (#30B0C0). The blue and teal
+ * are beautiful on a badge and punishing as text, so each is deepened just far
+ * enough to carry contrast on paper — recognisably the school's colours, but
+ * readable at 14px.
  *
- * Fonts are deliberately system stacks. No webfont download means the site
- * renders instantly on a slow school connection, which matters more here than
- * a bespoke typeface.
+ * Semantic names only; components never reference a raw hex. Dark mode is a
+ * night edition rather than an inversion — the paper goes dark, the ink stays
+ * warm, and the blue lifts so it still reads.
  */
 
 :root {
-  --paper: #fbfaf8;
+  /* Warm newsprint, not white. */
+  --paper: #fbfaf7;
   --surface: #ffffff;
-  --surface-2: #f4f3ef;
-  --surface-3: #eceae4;
+  --surface-2: #f4f2ed;
+  --surface-3: #eae7e0;
 
-  --ink: #17181c;
-  --ink-2: #4a4c55;
-  --ink-3: #767884;
+  --ink: #14161c;
+  --ink-2: #474a55;
+  --ink-3: #757986;
 
-  --line: #e3e1da;
-  --line-2: #d2cfc6;
+  /* Hairlines are the workhorse of this design, so they get two weights. */
+  --line: #e4e1da;
+  --line-2: #cfcbc1;
 
-  --brand: #1f3a5f;
-  --brand-hover: #2b4d7a;
-  --brand-soft: #e8edf4;
+  /* Crest royal blue, deepened for text contrast. */
+  --brand: #1c2eb8;
+  --brand-hover: #16249b;
+  --brand-soft: #e9ebf9;
   --brand-ink: #ffffff;
 
-  --accent: #9b2c2c;
-  --accent-soft: #f7e9e9;
+  /* Crest teal. The second colour, used the way print uses one. */
+  --accent: #1f8a98;
+  --accent-soft: #e3f2f4;
 
   --ok: #1f6f43;
   --ok-soft: #e6f2ec;
@@ -43,17 +50,36 @@
   --danger: #a12626;
   --danger-soft: #fbe9e9;
 
-  --ring: #1f3a5f;
+  --ring: #1c2eb8;
 
-  --radius: 0.625rem;
+  /* Portal and admin keep a soft radius; editorial surfaces use none. */
+  --radius: 0.5rem;
 
-  --shadow-sm: 0 1px 2px rgb(23 24 28 / 0.05);
-  --shadow: 0 1px 3px rgb(23 24 28 / 0.07), 0 4px 12px -4px rgb(23 24 28 / 0.06);
-  --shadow-lg: 0 8px 32px -8px rgb(23 24 28 / 0.16);
+  --shadow-sm: 0 1px 2px rgb(20 22 28 / 0.05);
+  --shadow: 0 1px 3px rgb(20 22 28 / 0.07), 0 4px 12px -4px rgb(20 22 28 / 0.06);
+  --shadow-lg: 0 8px 32px -8px rgb(20 22 28 / 0.16);
 
+  /*
+   * Type splits by purpose, not hierarchy: serif for what you read, sans for
+   * what you operate. `--font-display` is set by next/font in layout.tsx and
+   * falls back to Georgia, so text renders immediately and swaps when the
+   * webfont lands.
+   */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  /*
+   * Two serifs, on purpose.
+   *
+   * Display is the webfont — mastheads, headlines, standfirsts, the things you
+   * notice before you start reading. Text is Georgia, which every device
+   * already has, so paragraphs render instantly and cost nothing.
+   *
+   * `--font-serif` maps to display because that is what `font-serif` means
+   * everywhere in this codebase: the editorial face.
+   */
+  --font-display-stack: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-display-stack);
+  --font-text: Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     monospace;
 
@@ -62,25 +88,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #131418;
-    --surface: #191a1f;
-    --surface-2: #212228;
-    --surface-3: #2a2b33;
+    --paper: #101216;
+    --surface: #171a1f;
+    --surface-2: #1f222a;
+    --surface-3: #282c35;
 
-    --ink: #f0efec;
-    --ink-2: #b6b5b0;
-    --ink-3: #86858a;
+    --ink: #f2f0eb;
+    --ink-2: #b8b6b0;
+    --ink-3: #87858c;
 
-    --line: #2e2f37;
-    --line-2: #3d3e48;
+    --line: #2b2e37;
+    --line-2: #3b3f4a;
 
-    --brand: #7ea6d8;
-    --brand-hover: #98b9e3;
-    --brand-soft: #1c2836;
-    --brand-ink: #10161e;
+    --brand: #8ca0ff;
+    --brand-hover: #a6b6ff;
+    --brand-soft: #1a1f36;
+    --brand-ink: #0d1020;
 
-    --accent: #e08585;
-    --accent-soft: #2e1e1e;
+    --accent: #5fc8d6;
+    --accent-soft: #10262b;
 
     --ok: #6fc494;
     --ok-soft: #16261e;
@@ -89,7 +115,7 @@
     --danger: #e88b8b;
     --danger-soft: #2e1b1b;
 
-    --ring: #7ea6d8;
+    --ring: #8ca0ff;
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow: 0 1px 3px rgb(0 0 0 / 0.45), 0 4px 12px -4px rgb(0 0 0 / 0.5);
@@ -129,6 +155,7 @@
 
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --font-display: var(--font-display-stack);
   --font-mono: var(--font-mono);
 
   --radius-DEFAULT: var(--radius);
@@ -163,9 +190,10 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-serif);
-  letter-spacing: -0.015em;
-  line-height: 1.2;
+  font-family: var(--font-display-stack);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.12;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -175,17 +203,16 @@ p {
 }
 
 ::selection {
-  background: var(--brand-soft);
+  background: var(--accent-soft);
   color: var(--ink);
 }
 
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
-/* Respect users who've asked the OS to reduce motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -198,36 +225,135 @@ p {
 }
 
 /* --------------------------------------------------------------------------
-   Utilities
+   Broadsheet furniture
    -------------------------------------------------------------------------- */
 
-/* The masthead rule that runs under section headings on the public site. */
-.rule-accent::after {
-  content: "";
-  display: block;
-  width: 2.5rem;
-  height: 3px;
-  margin-top: 0.75rem;
-  background: var(--accent);
-  border-radius: 2px;
+/*
+ * The double rule under the masthead. A thick rule over a hairline is the
+ * single most recognisable newspaper signal, and it costs nothing to draw.
+ */
+.masthead-rule {
+  border-bottom: 1px solid var(--ink);
+  box-shadow: 0 3px 0 -1px var(--ink);
 }
 
-/* Long-form body copy (news posts, event agendas, announcements). */
+/* Small caps label: kickers, section markers, bylines, metadata. */
+.label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.label-accent {
+  color: var(--accent);
+}
+
+/*
+ * A section marker: label on the left, hairline running out to the edge.
+ * Replaces card headers across the public site.
+ */
+.section-marker {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+.section-marker::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
+
+/*
+ * Reading measure. Long-form text stays near 68 characters per line however
+ * wide the screen gets — comfortable to build without, unpleasant to read.
+ */
+.measure {
+  max-width: 34em;
+}
+.measure-wide {
+  max-width: 42em;
+}
+
+/*
+ * Drop cap, for the lead item and feature articles only. Used everywhere it
+ * becomes a tic.
+ */
+.dropcap > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display-stack);
+  font-weight: 600;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--ink);
+}
+
+/*
+ * The arch.
+ *
+ * The crest has a white arch at its centre — the school gate. It is the one
+ * shape in the Board's world that belongs to nowhere else, so it does the
+ * structural work a generic rounded rectangle would otherwise do: framing the
+ * lead publication, marking the front page.
+ *
+ * Deliberately the only curve on the public site. Everything else is square,
+ * which is what makes it read as a shape rather than as styling.
+ */
+.arch {
+  border-radius: 50vw 50vw 0 0 / 32% 32% 0 0;
+}
+
+/* The dateline strip: volume, issue, and date, the way a paper carries them. */
+.dateline {
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+}
+
+/* The Board's motto, set as a rule-break. */
+.motto {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  color: var(--ink-3);
+}
+.motto::before,
+.motto::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
+
+/* --------------------------------------------------------------------------
+   Long-form copy
+   -------------------------------------------------------------------------- */
+
+/*
+ * Serif, because this is the part people read. UI chrome stays sans — that
+ * split is the whole idea behind the redesign.
+ */
 .prose-editorial {
-  font-size: 1.0625rem;
-  line-height: 1.75;
-  color: var(--ink-2);
+  font-family: var(--font-text);
+  font-size: 1.1875rem;
+  line-height: 1.68;
+  color: var(--ink);
+  letter-spacing: -0.003em;
 }
 .prose-editorial > * + * {
-  margin-top: 1.15em;
+  margin-top: 1.1em;
 }
 .prose-editorial h2 {
-  font-size: 1.45rem;
+  font-size: 1.5rem;
   margin-top: 1.9em;
   color: var(--ink);
 }
 .prose-editorial h3 {
-  font-size: 1.18rem;
+  font-size: 1.2rem;
   margin-top: 1.6em;
   color: var(--ink);
 }
@@ -245,30 +371,43 @@ p {
   margin-top: 0.4em;
 }
 .prose-editorial strong {
-  color: var(--ink);
   font-weight: 650;
 }
 .prose-editorial a {
   color: var(--brand);
   text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.prose-editorial blockquote {
-  border-left: 3px solid var(--accent);
-  padding-left: 1em;
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
-  color: var(--ink);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
-/* Subtle paper texture behind the public hero. */
-.hero-tint {
-  background-image:
-    radial-gradient(
-      ellipse 80% 60% at 50% -10%,
-      var(--brand-soft) 0%,
-      transparent 70%
-    );
+/* Pull quote: rules above and below, teal mark, set larger. */
+.prose-editorial blockquote {
+  margin-block: 1.8em;
+  padding-block: 1.1em;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  font-size: 1.45rem;
+  line-height: 1.35;
+  font-style: italic;
+  color: var(--ink);
+}
+.prose-editorial blockquote::before {
+  content: "";
+  display: block;
+  width: 1.75rem;
+  height: 2px;
+  margin-bottom: 0.7em;
+  background: var(--accent);
+}
+
+/* Standfirst — the line under a headline that sells the piece. */
+.standfirst {
+  font-family: var(--font-display-stack);
+  font-weight: 400;
+  font-size: 1.3125rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  text-wrap: pretty;
 }
 
 .scrollbar-thin {
