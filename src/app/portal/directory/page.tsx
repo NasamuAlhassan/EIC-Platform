@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Mail, Phone, Search, Users, EyeOff } from "lucide-react";
+import { Mail, Phone, Search, Users } from "lucide-react";
 import type { Prisma, Role } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { getPortalUser } from "@/lib/portal";
 import { can, ROLE_LABEL, ALL_ROLES } from "@/lib/rbac";
-import { formatDate } from "@/lib/utils";
+import { initials } from "@/lib/utils";
 import {
-  Avatar,
   Badge,
   Card,
   EmptyState,
@@ -121,65 +120,75 @@ export default async function DirectoryPage({
       </p>
 
       {members.length > 0 ? (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        /*
+          Portraits, not 48px avatars. The public About page gives executives a
+          proper portrait; showing the same people as thumbnails to their own
+          colleagues was the odd one out.
+
+          Smaller than About, though — this is a directory of fifty people you
+          search and scan, not five you are being introduced to. Three up on a
+          phone keeps most of a class visible at once.
+        */
+        <ul className="grid grid-cols-3 gap-x-4 gap-y-7 sm:grid-cols-4 lg:grid-cols-5">
           {members.map((m) => (
-            <li key={m.id}>
-              <Card className="h-full p-4">
-                <div className="flex items-start gap-3.5">
-                  <Avatar name={m.name} src={m.avatarUrl} size={48} />
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="truncate text-[15.5px] font-medium">
-                        {m.name}
-                      </h2>
-                      {m.id === user.id ? <Badge tone="brand">You</Badge> : null}
-                      {m.isExecutive ? <Badge tone="accent">Exec</Badge> : null}
-                    </div>
-
-                    <p className="mt-0.5 text-[13px] text-ink-2">
-                      {m.position ?? ROLE_LABEL[m.role]}
-                    </p>
-                    <p className="text-[12.5px] text-ink-3">
-                      {m.classYear ? `${m.classYear} · ` : ""}
-                      Joined {formatDate(m.joinedAt)}
-                    </p>
-
-                    {m.bio ? (
-                      <p className="mt-2 text-[13px] leading-relaxed text-ink-2">
-                        {m.bio}
-                      </p>
-                    ) : null}
-
-                    <div className="mt-2.5 space-y-1">
-                      {visibleEmail(m) ? (
-                        <a
-                          href={`mailto:${m.email}`}
-                          className="flex items-center gap-1.5 text-[12.5px] text-ink-2 hover:text-brand"
-                        >
-                          <Mail size={13} className="shrink-0" aria-hidden />
-                          <span className="truncate">{m.email}</span>
-                        </a>
-                      ) : (
-                        <p className="flex items-center gap-1.5 text-[12.5px] text-ink-3">
-                          <EyeOff size={13} className="shrink-0" aria-hidden />
-                          Email hidden
-                        </p>
-                      )}
-
-                      {visiblePhone(m) ? (
-                        <a
-                          href={`tel:${m.phone}`}
-                          className="flex items-center gap-1.5 text-[12.5px] text-ink-2 hover:text-brand"
-                        >
-                          <Phone size={13} className="shrink-0" aria-hidden />
-                          {m.phone}
-                        </a>
-                      ) : null}
-                    </div>
+            <li key={m.id} className="min-w-0">
+              <div className="arch overflow-hidden border border-line-2 bg-surface-2">
+                {m.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={m.avatarUrl}
+                    alt=""
+                    loading="lazy"
+                    className="aspect-[3/4] w-full object-cover"
+                  />
+                ) : (
+                  <div className="grid aspect-[3/4] w-full place-items-center">
+                    <span
+                      aria-hidden
+                      className="font-serif text-[24px] leading-none text-ink-3"
+                    >
+                      {initials(m.name)}
+                    </span>
                   </div>
-                </div>
-              </Card>
+                )}
+              </div>
+
+              <h2 className="mt-2 font-serif text-[15px] leading-tight">
+                {m.name}
+              </h2>
+              <p className="label mt-1 truncate">
+                {m.position ?? ROLE_LABEL[m.role]}
+              </p>
+
+              {m.id === user.id || m.isExecutive ? (
+                <p className="mt-1.5 flex flex-wrap gap-1">
+                  {m.id === user.id ? <Badge tone="brand">You</Badge> : null}
+                  {m.isExecutive ? <Badge tone="accent">Exec</Badge> : null}
+                </p>
+              ) : null}
+
+              {/* Contact details stay, but quietly. They are why someone opens
+                  the directory, not why they browse it. */}
+              <div className="mt-1.5 space-y-0.5">
+                {visibleEmail(m) ? (
+                  <a
+                    href={`mailto:${m.email}`}
+                    className="flex items-center gap-1 text-[11.5px] text-ink-3 hover:text-brand"
+                  >
+                    <Mail size={11} className="shrink-0" aria-hidden />
+                    <span className="truncate">{m.email}</span>
+                  </a>
+                ) : null}
+                {visiblePhone(m) ? (
+                  <a
+                    href={`tel:${m.phone}`}
+                    className="flex items-center gap-1 text-[11.5px] text-ink-3 hover:text-brand"
+                  >
+                    <Phone size={11} className="shrink-0" aria-hidden />
+                    <span className="truncate">{m.phone}</span>
+                  </a>
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

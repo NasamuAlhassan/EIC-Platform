@@ -89,7 +89,7 @@ export function PublicNav() {
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <Link
             href="/login"
-            className={buttonClass("primary", "sm", "hidden rounded-none sm:inline-flex")}
+            className={buttonClass("primary", "sm", "no-print hidden rounded-none sm:inline-flex")}
           >
             <LogIn size={15} aria-hidden />
             Members

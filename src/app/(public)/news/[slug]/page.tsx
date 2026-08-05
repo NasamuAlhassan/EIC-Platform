@@ -67,7 +67,7 @@ export default async function PostPage({ params }: Props) {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
         href="/news"
-        className="inline-flex items-center gap-1.5 text-[13.5px] text-ink-2 hover:text-brand"
+        className="no-print inline-flex items-center gap-1.5 text-[13.5px] text-ink-2 hover:text-brand"
       >
         <ArrowLeft size={15} aria-hidden />
         All news
@@ -103,6 +103,7 @@ export default async function PostPage({ params }: Props) {
                 name={post.author.name}
                 src={post.author.avatarUrl}
                 size={32}
+                className="no-print"
               />
             ) : null}
             <p className="label">

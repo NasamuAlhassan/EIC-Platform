@@ -540,11 +540,114 @@ p {
   scrollbar-width: thin;
 }
 
+/* --------------------------------------------------------------------------
+   Print
+   --------------------------------------------------------------------------
+   Minutes get printed for meetings and notices get pinned to boards, so pages
+   leaving this site on paper is a normal thing rather than an edge case. A
+   site that publishes should print properly.
+
+   The rules: drop the interface, drop the ink-heavy backgrounds, set the text
+   black on white at a readable size, and make sure a heading never ends up
+   alone at the foot of a page.
+   -------------------------------------------------------------------------- */
+
 @media print {
-  .no-print {
-    display: none !important;
+  @page {
+    margin: 18mm 16mm;
   }
+
+  /* Paper is white and toner is expensive. */
+  :root {
+    --paper: #fff;
+    --surface: #fff;
+    --surface-2: #fff;
+    --surface-3: #fff;
+    --ink: #000;
+    --ink-2: #1a1a1a;
+    --ink-3: #444;
+    --line: #bbb;
+    --line-2: #888;
+    --brand: #000;
+    --accent: #000;
+  }
+
   body {
     background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  /* The interface does not belong on paper. */
+  .no-print,
+  header nav ul,
+  header button,
+  footer,
+  form,
+  [aria-label="Pagination"] {
+    display: none !important;
+  }
+
+  /* Nothing floats, nothing frosts, nothing casts a shadow. */
+  .glass,
+  .glass-panel {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+
+  header {
+    position: static !important;
+    border-bottom: 1.5pt solid #000 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  /* The measure is set by the page, not the screen. */
+  .measure,
+  .measure-wide {
+    max-width: none;
+  }
+
+  .prose-editorial {
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  /* Keep headings with the text they introduce, and never break a paragraph
+     across a page on its first or last line. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  p,
+  li,
+  blockquote,
+  img {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /*
+   * A printed page has no links, so a bare "read more" is a dead end. Spell out
+   * the destination for anything pointing off-site — but not for internal
+   * navigation, which would litter every page with our own URLs.
+   */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #444;
+    word-break: break-all;
+  }
+
+  img {
+    max-width: 100% !important;
   }
 }

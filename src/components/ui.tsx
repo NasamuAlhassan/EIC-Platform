@@ -103,11 +103,12 @@ export function CardHeader({
       )}
     >
       <div className="min-w-0">
-        <h2 className="text-[15px] font-semibold font-sans text-ink tracking-tight">
-          {title}
-        </h2>
+        {/* Small caps, matching the section markers on the public site. The
+            portal keeps its cards — it is a tool — but it should not sound like
+            a different product. */}
+        <h2 className="label text-ink">{title}</h2>
         {description ? (
-          <p className="text-[13px] text-ink-3 mt-0.5">{description}</p>
+          <p className="mt-1 text-[13px] text-ink-3">{description}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -420,11 +421,11 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-2xl sm:text-[28px] font-semibold tracking-tight">
+        <h1 className="font-serif text-[26px] leading-tight tracking-[-0.02em] sm:text-[30px]">
           {title}
         </h1>
         {description ? (
-          <p className="text-sm text-ink-2 mt-1.5 max-w-2xl">{description}</p>
+          <p className="mt-2 max-w-2xl text-sm text-ink-2">{description}</p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -447,10 +448,8 @@ export function Stat({
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[12px] uppercase tracking-wider text-ink-3 font-medium">
-            {label}
-          </p>
-          <p className="text-2xl font-semibold font-sans text-ink mt-1.5 tabular-nums">
+          <p className="label">{label}</p>
+          <p className="mt-1.5 font-serif text-[26px] font-semibold tabular-nums text-ink">
             {value}
           </p>
           {hint ? <p className="text-[12.5px] text-ink-3 mt-0.5">{hint}</p> : null}
@@ -467,9 +466,7 @@ export function Divider({ label }: { label?: string }) {
   return (
     <div className="flex items-center gap-3">
       <hr className="flex-1 border-line" />
-      <span className="text-[11px] uppercase tracking-wider text-ink-3 font-medium">
-        {label}
-      </span>
+      <span className="label">{label}</span>
       <hr className="flex-1 border-line" />
     </div>
   );

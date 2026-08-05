@@ -40,7 +40,7 @@ export default async function PublicEventPage({ params }: Props) {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
         href="/events"
-        className="inline-flex items-center gap-1.5 text-[13.5px] text-ink-2 hover:text-brand"
+        className="no-print inline-flex items-center gap-1.5 text-[13.5px] text-ink-2 hover:text-brand"
       >
         <ArrowLeft size={15} aria-hidden />
         All events

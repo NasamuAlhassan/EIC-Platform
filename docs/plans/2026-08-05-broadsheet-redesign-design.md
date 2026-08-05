@@ -178,6 +178,38 @@ were 36px and 24px, and event titles were 18px tall. All are now at least 40px.
 
 No horizontal overflow on any surface, public or portal.
 
+## Second pass
+
+Four surfaces the first pass left behind.
+
+**The directory.** Members were still 48px avatars while the public About page
+gave the same people full portraits — the odd one out, and the one members see
+far more often. Now arch portraits, five up on a desktop and three on a phone.
+Smaller than About on purpose: this is fifty people you scan, not five you are
+introduced to.
+
+**Portal typography.** The portal keeps its cards — it is a tool, and reading
+furniture would slow down daily use — but it sounded like a different product.
+Card headings are now small-caps labels matching the section markers, page
+titles are set in the display face, and statistics use the shared label style.
+All of it landed through `ui.tsx`, so it applied to every portal and admin page
+at once.
+
+**The gallery.** The last public surface still carrying shadows and rounded
+cards. On a page whose entire subject is photography the design's job is to get
+out of the way, so the chrome is gone: a full-width lead album, then each
+remaining album showing its cover plus two frames from inside it. One cover
+tells you an album exists; three tell you whether it is worth opening.
+
+**Print.** Minutes get printed for meetings and notices get pinned to boards, so
+paper is a normal destination rather than an edge case. Articles now print black
+on white with the masthead, byline and drop cap intact, no navigation, no glass,
+no shadows, and external links spelled out. Headings stay with their text and
+paragraphs do not split across pages on a single line.
+
+Verified by temporarily rendering the print stylesheet on screen, which caught
+two things that had leaked through: the Members button and the "back to" links.
+
 ## Verified
 
 Built and inspected in a browser, populated and empty, in both light and dark:
