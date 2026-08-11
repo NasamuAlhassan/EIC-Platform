@@ -11,6 +11,7 @@ import { recordAudit } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { site } from "@/lib/config";
 import { ROLE_LABEL } from "@/lib/rbac";
+import { generateTempPassword, describeDelivery } from "@/lib/accounts";
 
 export type MemberState = {
   ok?: boolean;
@@ -29,26 +30,6 @@ export type MemberState = {
   errors?: Record<string, string>;
 };
 
-/** Turns a send result into something an administrator can act on. */
-function describeDelivery(
-  result: { ok: boolean; simulated: boolean; error?: string },
-  address: string,
-): { emailed: boolean; emailNote: string } {
-  if (result.simulated) {
-    return {
-      emailed: false,
-      emailNote:
-        "Email isn't set up yet, so nothing was sent — pass the password on yourself.",
-    };
-  }
-  if (!result.ok) {
-    return {
-      emailed: false,
-      emailNote: `The email couldn't be sent (${result.error ?? "unknown error"}) — pass the password on yourself.`,
-    };
-  }
-  return { emailed: true, emailNote: `Sent to ${address}.` };
-}
 
 const ROLES = ["MEMBER", "EDITOR", "EXECUTIVE", "ADMIN"] as const;
 
@@ -62,11 +43,6 @@ const createSchema = z.object({
   isExecutive: z.boolean(),
 });
 
-/** Readable but not guessable — an admin has to read this out or paste it. */
-function generatePassword() {
-  const words = crypto.randomBytes(6).toString("base64url").replace(/[-_]/g, "");
-  return `Board-${words}`;
-}
 
 function toErrors(error: z.ZodError) {
   const errors: Record<string, string> = {};
@@ -100,7 +76,7 @@ export async function createMember(
     return { errors: { email: "Someone already has an account with that email." } };
   }
 
-  const tempPassword = generatePassword();
+  const tempPassword = generateTempPassword();
 
   const created = await db.user.create({
     data: {
@@ -258,7 +234,7 @@ export async function resetMemberPassword(
   });
   if (!target) return { errors: { form: "That member no longer exists." } };
 
-  const tempPassword = generatePassword();
+  const tempPassword = generateTempPassword();
 
   await db.user.update({
     where: { id: target.id },

@@ -139,6 +139,10 @@ enum SubmissionStatus {
   NEW
   READ
   ARCHIVED
+  /// A join application that became a member account.
+  ACCEPTED
+  /// A join application turned down, with the applicant told.
+  DECLINED
 }
 
 // ---------------------------------------------------------------------------
@@ -511,6 +515,14 @@ model Submission {
   // "Join the Board" extras
   classYear      String?
   interestArea   String?
+
+  /*
+   * Who decided, and when. An application is the start of somebody's time on
+   * the Board, so the moment it was accepted is worth keeping — and the name is
+   * stored rather than related so the record survives that executive leaving.
+   */
+  decidedAt     DateTime?
+  decidedByName String?
 
   createdAt DateTime @default(now())
 

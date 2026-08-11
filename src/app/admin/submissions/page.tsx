@@ -15,12 +15,15 @@ import {
   PageHeader,
 } from "@/components/ui";
 import { setSubmissionStatus } from "./actions";
+import { ApplicationDecision } from "./application-actions";
 
 export const metadata: Metadata = { title: "Inbox" };
 
 const FILTERS = [
   { key: "new", label: "New", status: "NEW" },
   { key: "read", label: "Read", status: "READ" },
+  { key: "accepted", label: "Accepted", status: "ACCEPTED" },
+  { key: "declined", label: "Declined", status: "DECLINED" },
   { key: "archived", label: "Archived", status: "ARCHIVED" },
   { key: "all", label: "All", status: null },
 ] as const;
@@ -88,6 +91,12 @@ export default async function SubmissionsPage({
                     {s.status === "ARCHIVED" ? (
                       <Badge tone="neutral">Archived</Badge>
                     ) : null}
+                    {s.status === "ACCEPTED" ? (
+                      <Badge tone="ok">Accepted</Badge>
+                    ) : null}
+                    {s.status === "DECLINED" ? (
+                      <Badge tone="neutral">Declined</Badge>
+                    ) : null}
                   </div>
 
                   <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-ink-3">
@@ -128,6 +137,28 @@ export default async function SubmissionsPage({
                       <p key={i}>{p}</p>
                     ))}
                   </div>
+
+                  {/*
+                    An application can be acted on here rather than being
+                    copied by hand into Admin → Members. Everything the account
+                    needs is already in the application.
+                  */}
+                  {s.type === "JOIN" ? (
+                    <div className="mt-4 border-t border-line pt-4">
+                      {s.status === "ACCEPTED" || s.status === "DECLINED" ? (
+                        <p className="label">
+                          {s.status === "ACCEPTED" ? "Accepted" : "Declined"}
+                          {s.decidedByName ? ` by ${s.decidedByName}` : ""}
+                          {s.decidedAt ? ` · ${formatFullDate(s.decidedAt)}` : ""}
+                        </p>
+                      ) : (
+                        <ApplicationDecision
+                          submissionId={s.id}
+                          applicantName={s.name}
+                        />
+                      )}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-1.5">
