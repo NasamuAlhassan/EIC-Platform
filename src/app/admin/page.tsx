@@ -17,6 +17,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/portal";
 import { can } from "@/lib/rbac";
 import { isEmailConfigured } from "@/lib/email";
+import { emailFrom } from "@/lib/config";
 import { isSmsConfigured } from "@/lib/sms";
 import { isBlobConfigured, formatBytes } from "@/lib/storage";
 import { formatTime, relativeDay } from "@/lib/utils";
@@ -30,6 +31,7 @@ import {
   PageHeader,
   Stat,
 } from "@/components/ui";
+import { TestEmail } from "./test-email";
 
 export default async function AdminDashboard() {
   const user = await requireRole("EDITOR");
@@ -112,6 +114,23 @@ export default async function AdminDashboard() {
             ))}
           </ul>
         </Alert>
+      ) : null}
+
+      {/*
+        Setting up a sending domain is a loop of change-a-record-and-retry, and
+        the only question that matters is whether mail actually arrives. Without
+        this the only way to check was to create a throwaway member.
+      */}
+      {isEmailConfigured() ? (
+        <Card className="mb-6">
+          <CardHeader
+            title="Email"
+            description={`Sending as ${emailFrom}`}
+          />
+          <div className="p-5">
+            <TestEmail />
+          </div>
+        </Card>
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
