@@ -23,6 +23,14 @@ export type EmailMessage = {
   body: string;
   /** Optional call-to-action button. */
   action?: { label: string; url: string };
+  /**
+   * Where replies should land. Defaults to the Board's contact address.
+   *
+   * Without this, a new member who replies to their welcome email — the
+   * obviously human thing to do — is writing to a no-reply mailbox nobody
+   * reads.
+   */
+  replyTo?: string;
 };
 
 export type SendResult = {
@@ -132,13 +140,27 @@ export async function sendEmail(msg: EmailMessage): Promise<SendResult> {
       chunks.push(recipients.slice(i, i + 45));
     }
 
+    const replyTo = msg.replyTo ?? site.contact.email ?? "";
+
     let delivered = 0;
     for (const chunk of chunks) {
+      /*
+       * One recipient is addressed directly; several are BCC'd.
+       *
+       * BCC keeps members from seeing each other's addresses on a blast, which
+       * is the right default there. But putting a single recipient in BCC and
+       * the Board in To: is a well-known spam signal — and a welcome email in
+       * the spam folder means a new member cannot get in and does not know why.
+       */
+      const addressing =
+        chunk.length === 1
+          ? { to: chunk }
+          : { to: emailFrom, bcc: chunk };
+
       const { error } = await resend.emails.send({
         from: emailFrom,
-        // BCC so members never see each other's addresses.
-        to: emailFrom,
-        bcc: chunk,
+        ...addressing,
+        ...(replyTo ? { replyTo } : {}),
         subject: msg.subject,
         html: renderHtml(msg),
         text: msg.body,
